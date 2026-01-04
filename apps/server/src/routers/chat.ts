@@ -107,10 +107,10 @@ export const chatRouter = router({
         role: "assistant",
         content: response.answer,
         sources: response.sources.map((s) => ({
-          documentId: s.metadata.documentId,
-          filename: s.metadata.filename,
-          content: s.content,
-          score: s.score,
+          documentId: s.metadata?.documentId || "unknown",
+          filename: s.metadata?.filename || "Unknown file",
+          content: s.content || "",
+          score: s.score || 0,
         })),
         timestamp: new Date(),
       });
@@ -199,10 +199,10 @@ export const chatRouter = router({
               role: "assistant",
               content: fullAnswer,
               sources: sources.map((s) => ({
-                documentId: s.metadata.documentId,
-                filename: s.metadata.filename,
-                content: s.content,
-                score: s.score,
+                documentId: s.metadata?.documentId || "unknown",
+                filename: s.metadata?.filename || "Unknown file",
+                content: s.content || "",
+                score: s.score || 0,
               })),
               timestamp: new Date(),
             });

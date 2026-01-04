@@ -19,15 +19,20 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 
+interface Source {
+  id?: string;
+  content?: string;
+  score?: number;
+  metadata?: Record<string, any>;
+  // Flattened fields (from chat history)
+  filename?: string;
+  documentId?: string;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
-  sources?: Array<{
-    id: string;
-    content: string;
-    score: number;
-    metadata: Record<string, any>;
-  }>;
+  sources?: Source[];
 }
 
 export default function SearchPage() {
@@ -259,14 +264,14 @@ export default function SearchPage() {
                               <div className="flex items-center gap-2 mb-2">
                                 <FileText className="h-4 w-4 text-blue-600" />
                                 <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                                  {source.metadata.filename}
+                                  {source.metadata?.filename || source.filename || "Unknown file"}
                                 </span>
                                 <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full ml-auto">
-                                  {(source.score * 100).toFixed(0)}%
+                                  {((source.score || 0) * 100).toFixed(0)}%
                                 </span>
                               </div>
                               <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                                {source.content}
+                                {source.content || "No content available"}
                               </p>
                             </div>
                           ))}

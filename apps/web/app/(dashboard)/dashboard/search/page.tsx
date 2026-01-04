@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
+import { playSuccessSound } from "@/lib/notification-sound";
 
 interface Source {
   id?: string;
@@ -42,6 +43,15 @@ export default function SearchPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+  }, []);
 
   const { data: chats, refetch: refetchChats } = trpc.chat.list.useQuery();
   
@@ -114,6 +124,23 @@ export default function SearchPage() {
           sources: result.sources as any,
         },
       ]);
+
+      // Show success notification
+      toast({
+        title: "✅ Response Ready",
+        description: `Found ${result.sources?.length || 0} relevant sources`,
+      });
+
+      // Play success sound
+      playSuccessSound();
+
+      // Browser notification if permission granted
+      if (typeof window !== "undefined" && Notification.permission === "granted") {
+        new Notification("RAG Search", {
+          body: "Your question has been answered!",
+          icon: "/favicon.ico",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",

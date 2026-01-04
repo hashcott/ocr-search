@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
     AlertCircle,
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
+import { playSuccessSound } from "@/lib/notification-sound";
 
 interface FileWithProgress {
     file: File;
@@ -36,6 +37,15 @@ export default function UploadPage() {
     const [files, setFiles] = useState<FileWithProgress[]>([]);
 
     const uploadMutation = trpc.document.upload.useMutation();
+
+    // Request notification permission on mount
+    useEffect(() => {
+        if (typeof window !== "undefined" && "Notification" in window) {
+            if (Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+        }
+    }, []);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const newFiles = acceptedFiles.map((file) => ({
@@ -115,9 +125,23 @@ export default function UploadPage() {
             );
 
             toast({
-                title: "Success",
-                description: `${file.name} uploaded successfully`,
+                title: "✅ Upload Complete",
+                description: `${file.name} has been processed and indexed!`,
             });
+
+            // Play success sound
+            playSuccessSound();
+
+            // Browser notification
+            if (
+                typeof window !== "undefined" &&
+                Notification.permission === "granted"
+            ) {
+                new Notification("Document Ready", {
+                    body: `${file.name} has been processed successfully!`,
+                    icon: "/favicon.ico",
+                });
+            }
         } catch (error) {
             setFiles((prev) =>
                 prev.map((f, i) =>
@@ -143,9 +167,35 @@ export default function UploadPage() {
     };
 
     const handleUploadAll = async () => {
+        const pendingFiles = files.filter((f) => f.status === "pending");
+        let successCount = 0;
+
         for (let i = 0; i < files.length; i++) {
             if (files[i].status === "pending") {
-                await uploadFile(files[i], i);
+                try {
+                    await uploadFile(files[i], i);
+                    successCount++;
+                } catch {
+                    // Error already handled in uploadFile
+                }
+            }
+        }
+
+        // Show batch completion notification
+        if (pendingFiles.length > 1) {
+            toast({
+                title: "🎉 Batch Upload Complete",
+                description: `${successCount}/${pendingFiles.length} files processed successfully!`,
+            });
+
+            if (
+                typeof window !== "undefined" &&
+                Notification.permission === "granted"
+            ) {
+                new Notification("Batch Upload Complete", {
+                    body: `${successCount}/${pendingFiles.length} documents have been processed!`,
+                    icon: "/favicon.ico",
+                });
             }
         }
     };

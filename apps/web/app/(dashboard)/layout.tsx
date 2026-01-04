@@ -18,6 +18,7 @@ import {
     Bell,
     User,
     FolderOpen,
+    Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ const navItems: NavItem[] = [
     { name: "Chat & Search", href: "/dashboard/search", icon: MessageSquare },
     { name: "Find Files", href: "/dashboard/files", icon: FolderSearch },
     { name: "Upload", href: "/dashboard/upload", icon: Upload },
+    { name: "Organization", href: "/dashboard/organization", icon: Building2 },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 

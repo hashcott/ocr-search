@@ -1,0 +1,31 @@
+{
+  "name": "search-pdf-rag",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "type-check": "turbo run type-check",
+    "setup": "bash scripts/setup-dev.sh",
+    "services:start": "bash scripts/start-services.sh",
+    "services:stop": "docker-compose down",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.3",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

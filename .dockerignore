@@ -1,0 +1,14 @@
+node_modules
+.next
+.turbo
+dist
+build
+.git
+.gitignore
+*.md
+.env*
+!.env.example
+uploads
+temp
+.DS_Store
+

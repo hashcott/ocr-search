@@ -2,9 +2,12 @@ import express from "express";
 import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import dotenv from "dotenv";
-import { appRouter } from "./routers";
+import { appRouter, AppRouter } from "./routers";
 import { createContext } from "./context";
 import { connectDatabase } from "./db/connection";
+
+// Export types for the client
+export type { AppRouter };
 
 // Load environment variables
 dotenv.config();

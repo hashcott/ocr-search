@@ -51,14 +51,14 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
 
     // Apply role-based permissions
     for (const permission of rolePermissions) {
-      const subject = resourceToSubject[permission.resource];
+      const subjectType = resourceToSubject[permission.resource];
       
       for (const action of permission.actions) {
         if (action === "manage") {
           // "manage" grants all actions on the resource
-          can("manage", subject, { organizationId } as any);
+          can("manage", subjectType, { organizationId });
         } else {
-          can(action, subject, { organizationId } as any);
+          can(action, subjectType, { organizationId });
         }
       }
     }
@@ -66,10 +66,10 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
     // Apply custom permissions (overrides)
     if (customPermissions) {
       for (const permission of customPermissions) {
-        const subject = resourceToSubject[permission.resource];
+        const subjectType = resourceToSubject[permission.resource];
         
         for (const action of permission.actions) {
-          can(action, subject, { organizationId } as any);
+          can(action, subjectType, { organizationId });
         }
       }
     }
@@ -107,16 +107,23 @@ export function getOrganizationPermissions(
   
   const permissions: Record<string, Actions[]> = {};
 
-  for (const subject of subjects) {
+  for (const subjectName of subjects) {
     const allowedActions: Actions[] = [];
     
+    // Create subject object that matches the conditions
+    const orgIdStr = String(organizationId);
+    const subject = {
+      __typename: subjectName,
+      organizationId: orgIdStr,
+    };
+    
     for (const action of actions) {
-      if (ability.can(action, subject, { organizationId } as any)) {
+      if (ability.can(action, subject)) {
         allowedActions.push(action);
       }
     }
     
-    permissions[subject] = allowedActions;
+    permissions[subjectName] = allowedActions;
   }
 
   return permissions as Record<Subjects, Actions[]>;

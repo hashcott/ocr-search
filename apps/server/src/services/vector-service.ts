@@ -38,17 +38,46 @@ export async function searchVectorStore(
   query: string,
   userId: string,
   topK: number = 5,
-  filter?: Record<string, any>
+  filter?: Record<string, any>,
+  organizationIds?: string[]
 ) {
   const vectorStore = await getVectorStore();
 
-  // Add userId to filter
-  const searchFilter = {
+  // Build filter: include user's personal documents and organization documents
+  const searchFilter: Record<string, any> = {
     ...filter,
-    userId,
   };
 
-  const results = await vectorStore.search(query, topK, searchFilter);
+  // If organizationIds provided, search in user's personal docs OR organization docs
+  // Otherwise, just search user's personal docs (backward compatibility)
+  if (organizationIds && organizationIds.length > 0) {
+    // For vector stores that support OR queries, we'd pass both userId and organizationIds
+    // For now, we'll filter by userId in the metadata and then filter results by org membership
+    searchFilter.userId = userId;
+    // Store orgIds in filter for later filtering
+    searchFilter._orgIds = organizationIds;
+  } else {
+    searchFilter.userId = userId;
+  }
+
+  // Get more results than requested to account for filtering
+  const expandedTopK = organizationIds && organizationIds.length > 0 ? topK * 3 : topK;
+  const results = await vectorStore.search(query, expandedTopK, searchFilter);
+
+  // Filter results by organization membership if needed
+  if (organizationIds && organizationIds.length > 0) {
+    return results.filter((result: any) => {
+      // Personal document (userId matches, no orgId)
+      if (result.metadata.userId === userId && !result.metadata.organizationId) {
+        return true;
+      }
+      // Organization document (orgId in user's organizations)
+      if (result.metadata.organizationId && organizationIds.includes(result.metadata.organizationId)) {
+        return true;
+      }
+      return false;
+    }).slice(0, topK);
+  }
 
   return results;
 }

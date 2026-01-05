@@ -127,8 +127,13 @@ export const organizationRouter = router({
 
       // Get user's permissions
       const ability = await getUserAbility(ctx.userId!);
-      const canManage = ability.can("manage", "Organization", { organizationId: input.id } as any);
-      const canUpdate = ability.can("update", "Organization", { organizationId: input.id } as any);
+      const orgId = String(input.id);
+      const orgSubject = {
+        __typename: "Organization" as const,
+        organizationId: orgId,
+      };
+      const canManage = ability.can("manage", orgSubject);
+      const canUpdate = ability.can("update", orgSubject);
 
       return {
         id: organization._id.toString(),
@@ -398,8 +403,13 @@ export const organizationRouter = router({
 
       for (const resource of resources) {
         const allowed: string[] = [];
+        const orgId = String(input.organizationId);
+        const subject = {
+          __typename: resource,
+          organizationId: orgId,
+        };
         for (const action of actions) {
-          if (ability.can(action, resource, { organizationId: input.organizationId } as any)) {
+          if (ability.can(action, subject)) {
             allowed.push(action);
           }
         }

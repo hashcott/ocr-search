@@ -4,12 +4,14 @@ import { getProcessorForFile } from "./processors";
 import { storeInVectorDB } from "./vector-service";
 import { emitDocumentProcessed } from "./websocket";
 import path from "path";
+import mongoose from "mongoose";
 
 export async function processDocument(
   fileBuffer: Buffer,
   filename: string,
   mimeType: string,
-  userId: string
+  userId: string,
+  organizationId?: string
 ) {
   // Generate a temporary ID for the file path
   const tempId = new Date().getTime().toString();
@@ -28,6 +30,13 @@ export async function processDocument(
       size: fileBuffer.length,
       originalPath: filePath,
       processingStatus: "processing",
+      ...(organizationId && {
+        organizationId: new mongoose.Types.ObjectId(organizationId),
+        visibility: "organization",
+      }),
+      ...(!organizationId && {
+        visibility: "private",
+      }),
     });
 
     // 3. Process file to extract text
@@ -49,6 +58,7 @@ export async function processDocument(
       userId,
       filename,
       documentId: document._id.toString(),
+      ...(organizationId && { organizationId }),
     });
 
     // 5. Mark as completed

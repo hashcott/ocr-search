@@ -12,6 +12,14 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import {
     Upload,
@@ -21,6 +29,7 @@ import {
     UploadCloud,
     File,
     AlertCircle,
+    Building2,
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
 import { useWebSocket } from "@/lib/use-websocket";
@@ -35,8 +44,11 @@ interface FileWithProgress {
 export default function UploadPage() {
     const { toast } = useToast();
     const [files, setFiles] = useState<FileWithProgress[]>([]);
+    const [selectedOrganizationId, setSelectedOrganizationId] =
+        useState<string>("personal");
 
     const uploadMutation = trpc.document.upload.useMutation();
+    const { data: organizations } = trpc.organization.list.useQuery();
 
     // Request notification permission on mount
     useEffect(() => {
@@ -55,7 +67,11 @@ export default function UploadPage() {
                 setFiles((prev) =>
                     prev.map((f) =>
                         f.file.name === data.filename
-                            ? { ...f, status: "success" as const, progress: 100 }
+                            ? {
+                                  ...f,
+                                  status: "success" as const,
+                                  progress: 100,
+                              }
                             : f
                     )
                 );
@@ -150,6 +166,10 @@ export default function UploadPage() {
                 mimeType: file.type,
                 size: file.size,
                 data: base64Data,
+                ...(selectedOrganizationId &&
+                    selectedOrganizationId !== "personal" && {
+                        organizationId: selectedOrganizationId,
+                    }),
             });
 
             clearInterval(progressInterval);
@@ -255,6 +275,42 @@ export default function UploadPage() {
                     </Button>
                 )}
             </div>
+
+            {/* Organization Selector */}
+            <Card className="border-0 shadow-sm">
+                <CardContent className="p-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="organization">
+                            Upload to Organization (Optional)
+                        </Label>
+                        <Select
+                            value={selectedOrganizationId}
+                            onValueChange={setSelectedOrganizationId}
+                        >
+                            <SelectTrigger id="organization">
+                                <Building2 className="h-4 w-4 mr-2" />
+                                <SelectValue placeholder="Personal documents (default)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="personal">
+                                    Personal documents
+                                </SelectItem>
+                                {organizations?.map((org) => (
+                                    <SelectItem key={org.id} value={org.id}>
+                                        {org.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {selectedOrganizationId &&
+                            selectedOrganizationId !== "personal"
+                                ? `Documents will be shared with organization members`
+                                : `Documents will be private to you`}
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Dropzone */}
             <Card className="border-0 shadow-modern-lg overflow-hidden hover-lift">

@@ -1,9 +1,11 @@
 import { router, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { FileUploadSchema } from "@search-pdf/shared";
+import { FileUploadSchema, SearchResult } from "@search-pdf/shared";
 import { Document } from "../db/models/Document";
 import { processDocument } from "../services/document-processor";
+import { getStorageAdapter } from "../services/storage";
+import { searchVectorStore, deleteFromVectorDB } from "../services/vector-service";
 
 export const documentRouter = router({
     upload: protectedProcedure
@@ -94,9 +96,6 @@ export const documentRouter = router({
 
             try {
                 // Delete from storage
-                const { getStorageAdapter } = await import(
-                    "../services/storage"
-                );
                 const storage = await getStorageAdapter();
                 await storage.delete(document.originalPath);
             } catch (error) {
@@ -105,9 +104,6 @@ export const documentRouter = router({
 
             try {
                 // Delete from vector DB
-                const { deleteFromVectorDB } = await import(
-                    "../services/vector-service"
-                );
                 await deleteFromVectorDB(document._id.toString());
             } catch (error) {
                 console.error("Failed to delete from vector DB:", error);
@@ -134,7 +130,6 @@ export const documentRouter = router({
                 });
             }
 
-            const { getStorageAdapter } = await import("../services/storage");
             const storage = await getStorageAdapter();
             const url = await storage.getUrl(document.originalPath);
 
@@ -152,10 +147,6 @@ export const documentRouter = router({
             })
         )
         .mutation(async ({ input, ctx }) => {
-            const { searchVectorStore } = await import(
-                "../services/vector-service"
-            );
-
             const results = await searchVectorStore(
                 input.query,
                 ctx.userId!,
@@ -164,7 +155,7 @@ export const documentRouter = router({
 
             // Get unique document IDs from results
             const documentIds = [
-                ...new Set(results.map((r) => r.metadata.documentId)),
+                ...new Set(results.map((r: SearchResult) => r.metadata.documentId as string).filter(Boolean)),
             ];
 
             // Fetch document metadata
@@ -177,9 +168,9 @@ export const documentRouter = router({
                 documents.map((doc) => [doc._id.toString(), doc])
             );
 
-            return results.map((result) => ({
+            return results.map((result: SearchResult) => ({
                 ...result,
-                document: documentsMap.get(result.metadata.documentId),
+                document: documentsMap.get(result.metadata.documentId as string),
             }));
         }),
 });

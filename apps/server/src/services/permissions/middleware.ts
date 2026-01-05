@@ -36,7 +36,7 @@ export async function authorize(
 ): Promise<void> {
   const ability = await getUserAbility(userId);
 
-  if (!ability.can(action as any, resource as any, resourceData)) {
+  if (!ability.can(action as any, resource as any, resourceData as any)) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: `You don't have permission to ${action} this ${resource.toLowerCase()}`,

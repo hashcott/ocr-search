@@ -56,9 +56,9 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
       for (const action of permission.actions) {
         if (action === "manage") {
           // "manage" grants all actions on the resource
-          can("manage", subject, { organizationId });
+          can("manage", subject, { organizationId } as any);
         } else {
-          can(action, subject, { organizationId });
+          can(action, subject, { organizationId } as any);
         }
       }
     }
@@ -69,16 +69,16 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
         const subject = resourceToSubject[permission.resource];
         
         for (const action of permission.actions) {
-          can(action, subject, { organizationId });
+          can(action, subject, { organizationId } as any);
         }
       }
     }
   }
 
   // Users can always read their own data (regardless of organization)
-  can("read", "Document", { userId: context.userId });
-  can("read", "Chat", { userId: context.userId });
-  can("manage", "Chat", { userId: context.userId });
+  can("read", "Document", { userId: context.userId } as any);
+  can("read", "Chat", { userId: context.userId } as any);
+  can("manage", "Chat", { userId: context.userId } as any);
 
   return build();
 }
@@ -92,7 +92,7 @@ export function checkPermission(
   resource: Subjects,
   resourceData?: Record<string, any>
 ): boolean {
-  return ability.can(action, resource, resourceData);
+  return ability.can(action, resource, resourceData as any);
 }
 
 /**
@@ -111,7 +111,7 @@ export function getOrganizationPermissions(
     const allowedActions: Actions[] = [];
     
     for (const action of actions) {
-      if (ability.can(action, subject, { organizationId })) {
+      if (ability.can(action, subject, { organizationId } as any)) {
         allowedActions.push(action);
       }
     }

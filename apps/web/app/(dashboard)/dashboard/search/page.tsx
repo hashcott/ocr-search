@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
-import { playSuccessSound } from "@/lib/notification-sound";
+import { useWebSocket } from "@/lib/use-websocket";
 
 interface Source {
   id?: string;
@@ -52,6 +52,20 @@ export default function SearchPage() {
       }
     }
   }, []);
+
+  // WebSocket integration for real-time chat notifications
+  useWebSocket(
+    undefined, // No document handler needed here
+    (data) => {
+      // Handle chat completed notification
+      if (data.chatId === currentChatId) {
+        toast({
+          title: "✅ Response Ready",
+          description: `Found ${data.sourcesCount} relevant sources`,
+        });
+      }
+    }
+  );
 
   const { data: chats, refetch: refetchChats } = trpc.chat.list.useQuery();
   
@@ -125,22 +139,12 @@ export default function SearchPage() {
         },
       ]);
 
-      // Show success notification
+      // Note: WebSocket will handle the notification and sound
+      // This toast is just for immediate feedback
       toast({
-        title: "✅ Response Ready",
+        title: "Response Generated",
         description: `Found ${result.sources?.length || 0} relevant sources`,
       });
-
-      // Play success sound
-      playSuccessSound();
-
-      // Browser notification if permission granted
-      if (typeof window !== "undefined" && Notification.permission === "granted") {
-        new Notification("RAG Search", {
-          body: "Your question has been answered!",
-          icon: "/favicon.ico",
-        });
-      }
     } catch (error) {
       toast({
         title: "Error",

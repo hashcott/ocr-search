@@ -3,12 +3,14 @@ import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import { createServer } from "http";
 import { appRouter, AppRouter } from "./routers";
 import { createContext } from "./context";
 import { connectDatabase } from "./db/connection";
 import { Document } from "./db/models/Document";
 import { getStorageAdapter } from "./services/storage";
 import { JWT_SECRET } from "./config/jwt";
+import { initializeWebSocket } from "./services/websocket";
 
 // Export types for the client
 export type { AppRouter };
@@ -17,6 +19,7 @@ export type { AppRouter };
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Middleware - Configure CORS to allow credentials and authorization headers
@@ -106,9 +109,14 @@ async function start() {
     await connectDatabase();
     console.log("✅ Database connected");
 
-    app.listen(PORT, () => {
+    // Initialize WebSocket
+    initializeWebSocket(httpServer);
+    console.log("✅ WebSocket server initialized");
+
+    httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📡 tRPC endpoint: http://localhost:${PORT}/trpc`);
+      console.log(`🔌 WebSocket server ready`);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);

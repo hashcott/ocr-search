@@ -23,7 +23,7 @@ import {
     AlertCircle,
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
-import { playSuccessSound } from "@/lib/notification-sound";
+import { useWebSocket } from "@/lib/use-websocket";
 
 interface FileWithProgress {
     file: File;
@@ -46,6 +46,44 @@ export default function UploadPage() {
             }
         }
     }, []);
+
+    // WebSocket integration for real-time notifications
+    useWebSocket(
+        (data) => {
+            // Handle document processed notification
+            if (data.status === "completed") {
+                setFiles((prev) =>
+                    prev.map((f) =>
+                        f.file.name === data.filename
+                            ? { ...f, status: "success" as const, progress: 100 }
+                            : f
+                    )
+                );
+                toast({
+                    title: "✅ Upload Complete",
+                    description: `${data.filename} has been processed and indexed!`,
+                });
+            } else {
+                setFiles((prev) =>
+                    prev.map((f) =>
+                        f.file.name === data.filename
+                            ? {
+                                  ...f,
+                                  status: "error" as const,
+                                  error: data.error || "Processing failed",
+                              }
+                            : f
+                    )
+                );
+                toast({
+                    title: "Processing Failed",
+                    description: `Failed to process ${data.filename}`,
+                    variant: "destructive",
+                });
+            }
+        },
+        undefined // No chat handler needed here
+    );
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const newFiles = acceptedFiles.map((file) => ({
@@ -124,24 +162,12 @@ export default function UploadPage() {
                 )
             );
 
+            // Note: WebSocket will handle the notification and sound
+            // This toast is just for immediate feedback
             toast({
-                title: "✅ Upload Complete",
-                description: `${file.name} has been processed and indexed!`,
+                title: "✅ Upload Started",
+                description: `${file.name} is being processed...`,
             });
-
-            // Play success sound
-            playSuccessSound();
-
-            // Browser notification
-            if (
-                typeof window !== "undefined" &&
-                Notification.permission === "granted"
-            ) {
-                new Notification("Document Ready", {
-                    body: `${file.name} has been processed successfully!`,
-                    icon: "/favicon.ico",
-                });
-            }
         } catch (error) {
             setFiles((prev) =>
                 prev.map((f, i) =>
@@ -231,46 +257,46 @@ export default function UploadPage() {
             </div>
 
             {/* Dropzone */}
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-modern-lg overflow-hidden hover-lift">
                 <div
                     {...getRootProps()}
-                    className={`relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300 ${
+                    className={`relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-modern ${
                         isDragActive
-                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                            : "border-slate-200 dark:border-slate-700 hover:border-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                            ? "border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 scale-[1.02]"
+                            : "border-slate-200 dark:border-slate-700 hover:border-purple-400 hover:bg-gradient-to-br hover:from-slate-50 hover:to-purple-50/30 dark:hover:bg-slate-800/50"
                     }`}
                 >
                     <input {...getInputProps()} />
 
                     <div className="flex flex-col items-center">
                         <div
-                            className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-300 ${
+                            className={`w-24 h-24 rounded-2xl flex items-center justify-center mb-6 transition-modern shadow-modern-lg ${
                                 isDragActive
-                                    ? "bg-blue-100 dark:bg-blue-900/40 scale-110"
-                                    : "bg-slate-100 dark:bg-slate-800"
+                                    ? "bg-gradient-to-br from-purple-500 to-blue-500 scale-110 shadow-purple-500/50"
+                                    : "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700"
                             }`}
                         >
                             <UploadCloud
-                                className={`h-10 w-10 transition-colors ${
+                                className={`h-12 w-12 transition-colors ${
                                     isDragActive
-                                        ? "text-blue-600"
-                                        : "text-slate-400"
+                                        ? "text-white"
+                                        : "text-slate-500 dark:text-slate-400"
                                 }`}
                             />
                         </div>
 
                         {isDragActive ? (
-                            <div>
-                                <p className="text-xl font-semibold text-blue-600 mb-2">
+                            <div className="animate-pulse-slow">
+                                <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
                                     Drop files here
                                 </p>
-                                <p className="text-slate-500">
+                                <p className="text-slate-600 dark:text-slate-300">
                                     Release to upload your files
                                 </p>
                             </div>
                         ) : (
                             <div>
-                                <p className="text-xl font-semibold text-slate-700 dark:text-white mb-2">
+                                <p className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-500 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent mb-2">
                                     Drag & drop files here
                                 </p>
                                 <p className="text-slate-500 dark:text-slate-400 mb-4">
@@ -281,7 +307,7 @@ export default function UploadPage() {
                                         (type) => (
                                             <span
                                                 key={type}
-                                                className="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-xs font-medium text-slate-600 dark:text-slate-300"
+                                                className="px-4 py-1.5 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-full text-xs font-semibold text-purple-700 dark:text-purple-300 shadow-modern"
                                             >
                                                 {type}
                                             </span>
@@ -299,7 +325,7 @@ export default function UploadPage() {
 
             {/* File list */}
             {files.length > 0 && (
-                <Card className="border-0 shadow-sm">
+                <Card className="border-0 shadow-modern-lg">
                     <CardHeader className="border-b border-slate-100 dark:border-slate-700">
                         <div className="flex items-center justify-between">
                             <div>

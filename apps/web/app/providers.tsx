@@ -5,6 +5,7 @@ import { httpBatchLink } from "@trpc/client";
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Toaster } from "@/components/ui/toaster";
+import { WebSocketProvider } from "@/components/websocket-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -34,8 +35,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        {children}
-        <Toaster />
+        <WebSocketProvider>
+          {children}
+          <Toaster />
+        </WebSocketProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );

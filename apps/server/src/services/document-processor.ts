@@ -2,6 +2,7 @@ import { Document } from "../db/models/Document";
 import { getStorageAdapter } from "./storage";
 import { getProcessorForFile } from "./processors";
 import { storeInVectorDB } from "./vector-service";
+import { emitDocumentProcessed } from "./websocket";
 import path from "path";
 
 export async function processDocument(
@@ -54,6 +55,13 @@ export async function processDocument(
     document.processingStatus = "completed";
     await document.save();
 
+    // Emit WebSocket notification
+    emitDocumentProcessed(userId, {
+      documentId: document._id.toString(),
+      filename: document.filename,
+      status: "completed",
+    });
+
     return {
       id: document._id.toString(),
       filename: document.filename,
@@ -61,6 +69,21 @@ export async function processDocument(
     };
   } catch (error) {
     console.error("Document processing error:", error);
+
+    // Emit failure notification if document was created
+    try {
+      const failedDoc = await Document.findOne({ userId, filename });
+      if (failedDoc) {
+        emitDocumentProcessed(userId, {
+          documentId: failedDoc._id.toString(),
+          filename: failedDoc.filename,
+          status: "failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    } catch (notifyError) {
+      // Ignore notification errors
+    }
 
     // Try to get the document if it was created
     // and mark as failed, otherwise just throw

@@ -126,28 +126,27 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6 animate-fadeIn">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="p-8 space-y-8">
+      {/* Stats Grid - Minimalist */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="card-hover border-0 shadow-sm">
+          <Card key={index} className="card-hover border">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-1">
                     {stat.title}
                   </p>
-                  <p className="text-3xl font-bold text-slate-800 dark:text-white mt-2">
+                  <p className="text-2xl font-semibold text-foreground">
                     {stat.value}
                   </p>
                   <div className="flex items-center gap-1 mt-2">
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                    <span className="text-xs text-green-500">{stat.change}</span>
-                    <span className="text-xs text-slate-400">this month</span>
+                    <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">{stat.change}</span>
                   </div>
                 </div>
-                <div className={`w-14 h-14 rounded-xl ${stat.gradient} flex items-center justify-center`}>
-                  <stat.icon className="h-7 w-7 text-white" />
+                <div className={`w-10 h-10 rounded-lg ${stat.gradient} flex items-center justify-center`}>
+                  <stat.icon className="h-5 w-5 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -155,20 +154,20 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Quick Actions - Minimalist */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link href="/dashboard/upload">
-          <Card className="card-hover border-0 shadow-sm cursor-pointer group">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Upload className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <Card className="card-hover border cursor-pointer group">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                <Upload className="h-5 w-5 text-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-800 dark:text-white">
+                <h3 className="font-medium text-foreground text-sm">
                   Upload Documents
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Add new files to your library
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Add new files
                 </p>
               </div>
             </CardContent>
@@ -176,17 +175,17 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/dashboard/search">
-          <Card className="card-hover border-0 shadow-sm cursor-pointer group">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Search className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          <Card className="card-hover border cursor-pointer group">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                <Search className="h-5 w-5 text-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-800 dark:text-white">
+                <h3 className="font-medium text-foreground text-sm">
                   Search & Chat
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Ask questions about your docs
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Ask questions
                 </p>
               </div>
             </CardContent>
@@ -194,17 +193,17 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/dashboard/files">
-          <Card className="card-hover border-0 shadow-sm cursor-pointer group">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Eye className="h-6 w-6 text-green-600 dark:text-green-400" />
+          <Card className="card-hover border cursor-pointer group">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                <Eye className="h-5 w-5 text-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-800 dark:text-white">
+                <h3 className="font-medium text-foreground text-sm">
                   Find Files
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Semantic search your files
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Semantic search
                 </p>
               </div>
             </CardContent>
@@ -212,9 +211,9 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Documents Table */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="border-b border-slate-100 dark:border-slate-700">
+      {/* Documents Table - Minimalist */}
+      <Card className="border">
+        <CardHeader className="border-b" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl">Recent Documents</CardTitle>
@@ -223,7 +222,7 @@ export default function DashboardPage() {
               </CardDescription>
             </div>
             <Link href="/dashboard/upload">
-              <Button className="gradient-primary border-0">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Upload className="h-4 w-4 mr-2" />
                 Upload New
               </Button>
@@ -246,7 +245,7 @@ export default function DashboardPage() {
                 Start by uploading your first document!
               </p>
               <Link href="/dashboard/upload" className="mt-4">
-                <Button className="gradient-primary border-0">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <Upload className="h-4 w-4 mr-2" />
                   Upload Document
                 </Button>
@@ -255,57 +254,60 @@ export default function DashboardPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-50 dark:bg-slate-800">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Document
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Size
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                  {documents.map((doc) => (
+                <tbody>
+                  {documents.map((doc, idx) => (
                     <tr
                       key={doc.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      className="hover:bg-accent/50 transition-colors"
+                      style={{ 
+                        borderBottom: idx < documents.length - 1 ? "1px solid hsl(var(--border))" : "none" 
+                      }}
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center">
+                            <FileText className="h-4 w-4 text-foreground" />
                           </div>
                           <div>
-                            <p className="font-medium text-slate-800 dark:text-white truncate max-w-xs">
+                            <p className="font-medium text-foreground text-sm truncate max-w-xs">
                               {doc.filename}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                            <p className="text-xs text-muted-foreground">
                               {doc.mimeType}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                      <td className="px-4 py-3 text-sm text-foreground">
                         {formatBytes(doc.size)}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${
                             doc.processingStatus === "completed"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
                               : doc.processingStatus === "failed"
-                              ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                              ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400"
+                              : "bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400"
                           }`}
                         >
                           {doc.processingStatus === "completed" && (
@@ -320,15 +322,15 @@ export default function DashboardPage() {
                           {doc.processingStatus}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
                         {formatDate(doc.createdAt)}
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                             disabled={doc.processingStatus !== "completed"}
                             onClick={() => handleDownload(doc)}
                           >
@@ -339,7 +341,7 @@ export default function DashboardPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                                 disabled={deleteMutation.isLoading}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -357,7 +359,7 @@ export default function DashboardPage() {
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleDelete(doc.id)}
-                                  className="bg-red-600 text-white hover:bg-red-700"
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
                                   Delete
                                 </AlertDialogAction>

@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { ChatHistory } from "../db/models/ChatHistory";
 import { performRAGQuery, performRAGQueryStream } from "../services/rag-service";
 import { observable } from "@trpc/server/observable";
+import { emitChatCompleted } from "../services/websocket";
 
 export const chatRouter = router({
   // Create new chat
@@ -117,6 +118,13 @@ export const chatRouter = router({
 
       await chat.save();
 
+      // Emit WebSocket notification
+      emitChatCompleted(ctx.userId!, {
+        chatId: input.chatId,
+        message: response.answer,
+        sourcesCount: response.sources.length,
+      });
+
       return {
         message: response.answer,
         sources: response.sources,
@@ -212,6 +220,14 @@ export const chatRouter = router({
               type: "complete",
               data: { answer: fullAnswer },
             });
+
+            // Emit WebSocket notification
+            emitChatCompleted(ctx.userId!, {
+              chatId: input.chatId,
+              message: fullAnswer,
+              sourcesCount: sources.length,
+            });
+
             emit.complete();
           } catch (error) {
             emit.error(error as Error);

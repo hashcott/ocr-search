@@ -68,10 +68,10 @@ export default function UploadPage() {
                     prev.map((f) =>
                         f.file.name === data.filename
                             ? {
-                                  ...f,
-                                  status: "success" as const,
-                                  progress: 100,
-                              }
+                                ...f,
+                                status: "success" as const,
+                                progress: 100,
+                            }
                             : f
                     )
                 );
@@ -84,10 +84,10 @@ export default function UploadPage() {
                     prev.map((f) =>
                         f.file.name === data.filename
                             ? {
-                                  ...f,
-                                  status: "error" as const,
-                                  error: data.error || "Processing failed",
-                              }
+                                ...f,
+                                status: "error" as const,
+                                error: data.error || "Processing failed",
+                            }
                             : f
                     )
                 );
@@ -168,8 +168,8 @@ export default function UploadPage() {
                 data: base64Data,
                 ...(selectedOrganizationId &&
                     selectedOrganizationId !== "personal" && {
-                        organizationId: selectedOrganizationId,
-                    }),
+                    organizationId: selectedOrganizationId,
+                }),
             });
 
             clearInterval(progressInterval);
@@ -193,13 +193,13 @@ export default function UploadPage() {
                 prev.map((f, i) =>
                     i === index
                         ? {
-                              ...f,
-                              status: "error" as const,
-                              error:
-                                  error instanceof Error
-                                      ? error.message
-                                      : "Upload failed",
-                          }
+                            ...f,
+                            status: "error" as const,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : "Upload failed",
+                        }
                         : f
                 )
             );
@@ -258,254 +258,258 @@ export default function UploadPage() {
     const successCount = files.filter((f) => f.status === "success").length;
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="p-8 sm:p-10 space-y-10 max-w-5xl mx-auto animate-fadeIn">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
-                        Upload Documents
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">
-                        Upload PDF, Word, XML, or text files for AI processing
+                    <h1 className="text-4xl font-bold tracking-tight">Upload Center</h1>
+                    <p className="text-muted-foreground mt-2 text-lg">
+                        Feed your AI brain with new knowledge assets.
                     </p>
                 </div>
                 {successCount > 0 && (
-                    <Button variant="outline" onClick={clearCompleted}>
+                    <Button
+                        variant="ghost"
+                        onClick={clearCompleted}
+                        className="rounded-xl text-primary font-bold hover:bg-primary/5 h-11 px-6"
+                    >
                         Clear Completed ({successCount})
                     </Button>
                 )}
             </div>
 
-            {/* Organization Selector */}
-            <Card className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="organization">
-                            Upload to Organization (Optional)
-                        </Label>
-                        <Select
-                            value={selectedOrganizationId}
-                            onValueChange={setSelectedOrganizationId}
-                        >
-                            <SelectTrigger id="organization">
-                                <Building2 className="h-4 w-4 mr-2" />
-                                <SelectValue placeholder="Personal documents (default)" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="personal">
-                                    Personal documents
-                                </SelectItem>
-                                {organizations?.map((org) => (
-                                    <SelectItem key={org.id} value={org.id}>
-                                        {org.name}
+            {/* Context & Organization - Premium Glass */}
+            <Card className="glass border-none shadow-xl overflow-hidden rounded-3xl group">
+                <CardContent className="p-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div className="space-y-4">
+                            <Label htmlFor="organization" className="text-sm font-bold uppercase tracking-widest opacity-70">
+                                Destination Context
+                            </Label>
+                            <Select
+                                value={selectedOrganizationId}
+                                onValueChange={setSelectedOrganizationId}
+                            >
+                                <SelectTrigger id="organization" className="bg-black/5 dark:bg-background/50 border-black/5 dark:border-white/5 h-12 rounded-xl focus:ring-primary shadow-inner">
+                                    <div className="flex items-center">
+                                        <Building2 className="h-4 w-4 mr-3 text-primary" />
+                                        <SelectValue placeholder="Personal Space" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent className="glass border-black/5 dark:border-white/10 rounded-xl shadow-2xl">
+                                    <SelectItem value="personal" className="rounded-lg focus:bg-primary/10">
+                                        Personal Workspace
                                     </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {selectedOrganizationId &&
-                            selectedOrganizationId !== "personal"
-                                ? `Documents will be shared with organization members`
-                                : `Documents will be private to you`}
-                        </p>
+                                    {organizations?.map((org) => (
+                                        <SelectItem key={org.id} value={org.id} className="rounded-lg focus:bg-primary/10">
+                                            {org.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 transition-colors group-hover:bg-primary/10">
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                    <AlertCircle className="h-5 w-5 text-primary" />
+                                </div>
+                                <p className="text-sm leading-relaxed text-muted-foreground">
+                                    {selectedOrganizationId && selectedOrganizationId !== "personal"
+                                        ? `Assets uploaded here will be collaboratively accessible to all members of ${organizations?.find(o => o.id === selectedOrganizationId)?.name || 'this organization'}.`
+                                        : `Assets will be encrypted and stored in your private vault, accessible only to you.`}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Dropzone */}
-            <Card className="border-0 shadow-modern-lg overflow-hidden hover-lift">
-                <div
-                    {...getRootProps()}
-                    className={`relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-modern ${
-                        isDragActive
-                            ? "border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 scale-[1.02]"
-                            : "border-slate-200 dark:border-slate-700 hover:border-purple-400 hover:bg-gradient-to-br hover:from-slate-50 hover:to-purple-50/30 dark:hover:bg-slate-800/50"
-                    }`}
-                >
-                    <input {...getInputProps()} />
-
-                    <div className="flex flex-col items-center">
-                        <div
-                            className={`w-24 h-24 rounded-2xl flex items-center justify-center mb-6 transition-modern shadow-modern-lg ${
-                                isDragActive
-                                    ? "bg-gradient-to-br from-purple-500 to-blue-500 scale-110 shadow-purple-500/50"
-                                    : "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700"
+            {/* Dropzone - Interactive AI Interaction */}
+            <div className="relative group/drop">
+                <div className="absolute -inset-1 bg-ai-gradient rounded-[2rem] blur opacity-10 group-hover/drop:opacity-30 transition-opacity duration-500" />
+                <Card className="glass border-none shadow-2xl overflow-hidden rounded-[2rem] relative z-10">
+                    <div
+                        {...getRootProps()}
+                        className={`relative p-16 text-center cursor-pointer transition-all duration-500 ${isDragActive
+                            ? "bg-black/10 dark:bg-white/10 scale-[0.99]"
+                            : "hover:bg-black/5 dark:hover:bg-white/5"
                             }`}
-                        >
-                            <UploadCloud
-                                className={`h-12 w-12 transition-colors ${
-                                    isDragActive
-                                        ? "text-white"
-                                        : "text-slate-500 dark:text-slate-400"
-                                }`}
-                            />
-                        </div>
+                    >
+                        <input {...getInputProps()} />
 
-                        {isDragActive ? (
-                            <div className="animate-pulse-slow">
-                                <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                                    Drop files here
-                                </p>
-                                <p className="text-slate-600 dark:text-slate-300">
-                                    Release to upload your files
-                                </p>
+                        <div className="flex flex-col items-center">
+                            <div
+                                className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center mb-8 transition-all duration-500 shadow-2xl relative ${isDragActive
+                                    ? "bg-ai-gradient scale-110 rotate-12"
+                                    : "bg-accent/50 scale-100 group-hover/drop:scale-105"
+                                    }`}
+                            >
+                                <UploadCloud
+                                    className={`h-16 w-16 transition-all duration-500 ${isDragActive ? "text-white" : "text-primary/70"
+                                        }`}
+                                />
+                                {isDragActive && (
+                                    <div className="absolute inset-0 rounded-[2.5rem] bg-white animate-ping opacity-20" />
+                                )}
                             </div>
-                        ) : (
-                            <div>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-500 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent mb-2">
-                                    Drag & drop files here
-                                </p>
-                                <p className="text-slate-500 dark:text-slate-400 mb-4">
-                                    or click to browse from your computer
-                                </p>
-                                <div className="flex flex-wrap justify-center gap-2">
-                                    {["PDF", "DOCX", "DOC", "XML", "TXT"].map(
-                                        (type) => (
+
+                            {isDragActive ? (
+                                <div className="space-y-2">
+                                    <p className="text-3xl font-bold tracking-tight text-primary">
+                                        Release to index files
+                                    </p>
+                                    <p className="text-muted-foreground text-lg">
+                                        AI processing will begin immediately.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <div>
+                                        <p className="text-3xl font-bold tracking-tight">
+                                            Ingest your documents
+                                        </p>
+                                        <p className="text-muted-foreground text-lg mt-2">
+                                            Drop files here or click to browse intelligence assets
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-wrap justify-center gap-3">
+                                        {["PDF", "DOCX", "XML", "TXT"].map((type) => (
                                             <span
                                                 key={type}
-                                                className="px-4 py-1.5 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-full text-xs font-semibold text-purple-700 dark:text-purple-300 shadow-modern"
+                                                className="px-6 py-2 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl text-xs font-bold tracking-widest text-foreground shadow-sm transition-all hover:bg-black/10 dark:hover:bg-white/10 hover:border-primary/30"
                                             >
                                                 {type}
                                             </span>
-                                        )
-                                    )}
+                                        ))}
+                                    </div>
+                                    <div className="pt-4 flex items-center justify-center gap-2 opacity-40">
+                                        <div className="w-1 h-1 rounded-full bg-foreground" />
+                                        <p className="text-[10px] uppercase font-bold tracking-tighter">Enterprise Grade Encryption Included</p>
+                                        <div className="w-1 h-1 rounded-full bg-foreground" />
+                                    </div>
                                 </div>
-                                <p className="text-xs text-slate-400 mt-4">
-                                    Maximum file size: 50MB
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </Card>
-
-            {/* File list */}
-            {files.length > 0 && (
-                <Card className="border-0 shadow-modern-lg">
-                    <CardHeader className="border-b border-slate-100 dark:border-slate-700">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle>Upload Queue</CardTitle>
-                                <CardDescription>
-                                    {files.length} file(s) • {pendingCount}{" "}
-                                    pending
-                                </CardDescription>
-                            </div>
-                            <Button
-                                onClick={handleUploadAll}
-                                disabled={pendingCount === 0}
-                                className="gradient-primary border-0"
-                            >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload All ({pendingCount})
-                            </Button>
+                            )}
                         </div>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                    </div>
+                </Card>
+            </div>
+
+            {/* Queue Area - Modern Streamlined List */}
+            {files.length > 0 && (
+                <div className="space-y-6 animate-slideUp">
+                    <div className="flex items-center justify-between px-4">
+                        <div>
+                            <h2 className="text-2xl font-bold">Upload Queue</h2>
+                            <p className="text-muted-foreground text-sm font-medium">
+                                {pendingCount} files remaining to be indexed
+                            </p>
+                        </div>
+                        <Button
+                            onClick={handleUploadAll}
+                            disabled={pendingCount === 0}
+                            className="bg-ai-gradient shadow-ai border-none rounded-2xl h-12 px-8 font-bold hover:opacity-90 transition-opacity"
+                        >
+                            <Upload className="h-5 w-5 mr-3" />
+                            Ingest All ({pendingCount})
+                        </Button>
+                    </div>
+
+                    <Card className="glass border-none shadow-2xl overflow-hidden rounded-[2rem]">
+                        <div className="divide-y divide-black/5 dark:divide-white/5">
                             {files.map((fileWithProgress, index) => (
                                 <div
                                     key={index}
-                                    className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    className="flex items-center gap-6 p-6 group hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                                 >
-                                    {/* File icon */}
+                                    {/* Iconic Status indicator */}
                                     <div
-                                        className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                            fileWithProgress.status ===
-                                            "success"
-                                                ? "bg-green-100 dark:bg-green-900/30"
-                                                : fileWithProgress.status ===
-                                                  "error"
-                                                ? "bg-red-100 dark:bg-red-900/30"
-                                                : "bg-blue-100 dark:bg-blue-900/30"
-                                        }`}
+                                        className={`w-14 h-14 rounded-2xl shadow-inner flex items-center justify-center relative flex-shrink-0 transition-transform group-hover:scale-110 ${fileWithProgress.status === "success"
+                                            ? "bg-emerald-500/10"
+                                            : fileWithProgress.status === "error"
+                                                ? "bg-rose-500/10"
+                                                : "bg-accent/50"
+                                            }`}
                                     >
-                                        {fileWithProgress.status ===
-                                        "success" ? (
-                                            <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-                                        ) : fileWithProgress.status ===
-                                          "error" ? (
-                                            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                        {fileWithProgress.status === "success" ? (
+                                            <CheckCircle className="h-7 w-7 text-emerald-500" />
+                                        ) : fileWithProgress.status === "error" ? (
+                                            <AlertCircle className="h-7 w-7 text-rose-500" />
                                         ) : (
-                                            <File className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                            <FileText className="h-7 w-7 text-primary/70" />
+                                        )}
+                                        {fileWithProgress.status === "uploading" && (
+                                            <div className="absolute inset-0 rounded-2xl border-2 border-primary border-t-transparent animate-spin" />
                                         )}
                                     </div>
 
-                                    {/* File info */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <p className="font-medium text-slate-800 dark:text-white truncate">
+                                    {/* Intelligence Identity */}
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-bold text-lg truncate pr-4 group-hover:text-primary transition-colors">
                                                 {fileWithProgress.file.name}
                                             </p>
-                                            <span className="text-sm text-slate-500 dark:text-slate-400 ml-2 flex-shrink-0">
-                                                {formatBytes(
-                                                    fileWithProgress.file.size
-                                                )}
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">
+                                                {formatBytes(fileWithProgress.file.size)}
                                             </span>
                                         </div>
 
-                                        {fileWithProgress.status ===
-                                            "uploading" && (
-                                            <div className="mt-2">
-                                                <Progress
-                                                    value={
-                                                        fileWithProgress.progress
-                                                    }
-                                                    className="h-2"
-                                                />
-                                                <p className="text-xs text-slate-500 mt-1">
-                                                    Uploading...{" "}
-                                                    {fileWithProgress.progress}%
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {fileWithProgress.status ===
-                                            "success" && (
-                                            <p className="text-sm text-green-600 dark:text-green-400">
-                                                Uploaded successfully
-                                            </p>
-                                        )}
-
-                                        {fileWithProgress.status ===
-                                            "error" && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {fileWithProgress.error}
-                                            </p>
-                                        )}
+                                        <div className="relative pt-2">
+                                            {fileWithProgress.status === "uploading" ? (
+                                                <div className="space-y-3">
+                                                    <Progress
+                                                        value={fileWithProgress.progress}
+                                                        className="h-1.5 bg-black/5 dark:bg-white/5"
+                                                    />
+                                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-primary animate-pulse">
+                                                        <span>Processing Neural Map...</span>
+                                                        <span>{fileWithProgress.progress}% Complete</span>
+                                                    </div>
+                                                </div>
+                                            ) : fileWithProgress.status === "success" ? (
+                                                <div className="flex items-center gap-2 text-emerald-500">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">Asset Secured & Indexed</span>
+                                                    <div className="h-0.5 flex-1 bg-emerald-500/20" />
+                                                </div>
+                                            ) : fileWithProgress.status === "error" ? (
+                                                <div className="flex items-center gap-2 text-rose-500">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">{fileWithProgress.error || 'Connection Timeout'}</span>
+                                                    <div className="h-0.5 flex-1 bg-rose-500/20" />
+                                                </div>
+                                            ) : (
+                                                <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest flex items-center gap-2">
+                                                    <span>Waiting in queue</span>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
+                                                    <span>Ready for AI Analysis</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    {/* Actions */}
-                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                        {fileWithProgress.status ===
-                                            "pending" && (
+                                    {/* Action Hub */}
+                                    <div className="flex items-center gap-3 flex-shrink-0">
+                                        {fileWithProgress.status === "pending" && (
                                             <Button
                                                 size="sm"
-                                                onClick={() =>
-                                                    uploadFile(
-                                                        fileWithProgress,
-                                                        index
-                                                    )
-                                                }
-                                                className="gradient-primary border-0"
+                                                onClick={() => uploadFile(fileWithProgress, index)}
+                                                className="bg-primary/10 text-primary border-none rounded-xl font-bold px-6 hover:bg-primary hover:text-white transition-all shadow-sm"
                                             >
-                                                Upload
+                                                Start
                                             </Button>
                                         )}
                                         <Button
-                                            size="sm"
+                                            size="icon"
                                             variant="ghost"
                                             onClick={() => removeFile(index)}
-                                            className="text-slate-400 hover:text-red-600"
+                                            className="h-10 w-10 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5 transition-all rounded-xl"
                                         >
-                                            <X className="h-4 w-4" />
+                                            <X className="h-5 w-5" />
                                         </Button>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </CardContent>
-                </Card>
+                    </Card>
+                </div>
             )}
         </div>
     );

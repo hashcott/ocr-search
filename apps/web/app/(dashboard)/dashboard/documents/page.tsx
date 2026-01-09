@@ -57,6 +57,7 @@ import {
     Filter,
     Grid,
     List,
+    AlertTriangle,
     CheckCircle,
     Clock,
     AlertCircle,
@@ -499,42 +500,42 @@ export default function DocumentsPage() {
 
     const getFileTypeColor = (mimeType: string) => {
         if (mimeType.includes("pdf"))
-            return "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400";
+            return "bg-rose-500/10 text-rose-500 border border-rose-500/20";
         if (mimeType.includes("word") || mimeType.includes("document"))
-            return "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400";
+            return "bg-primary/10 text-primary border border-primary/20";
         if (mimeType.includes("xml"))
-            return "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400";
+            return "bg-amber-500/10 text-amber-500 border border-amber-500/20";
         if (mimeType.includes("text"))
-            return "bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400";
-        return "bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400";
+            return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+        return "bg-slate-500/10 text-slate-500 border border-slate-500/20";
     };
 
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "completed":
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-sm">
                         <CheckCircle className="h-3 w-3" />
-                        Completed
+                        Indexed
                     </span>
                 );
             case "processing":
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                        <Clock className="h-3 w-3 animate-spin" />
-                        Processing
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 shadow-sm">
+                        <RefreshCw className="h-3 w-3 animate-spin" />
+                        Analyzing
                     </span>
                 );
             case "failed":
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-sm">
                         <AlertCircle className="h-3 w-3" />
-                        Failed
+                        Terminal
                     </span>
                 );
             default:
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-muted/10 text-muted-foreground border border-muted/20 shadow-sm">
                         {status}
                     </span>
                 );
@@ -547,28 +548,28 @@ export default function DocumentsPage() {
     ) => {
         if (!organizationId) {
             return (
-                <div title="Personal document">
-                    <Lock className="h-3 w-3 text-slate-500" />
+                <div title="Personal Hive" className="p-1 bg-amber-500/10 rounded-md border border-amber-500/20">
+                    <Lock className="h-3 w-3 text-amber-500" />
                 </div>
             );
         }
         switch (visibility) {
             case "private":
                 return (
-                    <div title="Private">
-                        <Lock className="h-3 w-3 text-slate-500" />
+                    <div title="Restricted" className="p-1 bg-rose-500/10 rounded-md border border-rose-500/20">
+                        <Lock className="h-3 w-3 text-rose-500" />
                     </div>
                 );
             case "organization":
                 return (
-                    <div title="Organization members">
-                        <Users className="h-3 w-3 text-blue-500" />
+                    <div title="Organization Mesh" className="p-1 bg-primary/10 rounded-md border border-primary/20">
+                        <Users className="h-3 w-3 text-primary" />
                     </div>
                 );
             case "public":
                 return (
-                    <div title="Public">
-                        <Globe className="h-3 w-3 text-green-500" />
+                    <div title="Global Broadcast" className="p-1 bg-emerald-500/10 rounded-md border border-emerald-500/20">
+                        <Globe className="h-3 w-3 text-emerald-500" />
                     </div>
                 );
             default:
@@ -582,15 +583,13 @@ export default function DocumentsPage() {
     };
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="p-8 sm:p-10 space-y-10 max-w-[1600px] mx-auto animate-fadeIn">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
-                        Document Management
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">
-                        {filteredDocuments.length} document(s) total
+                    <h1 className="text-4xl font-bold tracking-tight">Intelligence Assets</h1>
+                    <p className="text-muted-foreground mt-2 text-lg font-medium">
+                        Manage and orchestrate your indexed knowledge base.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -598,43 +597,43 @@ export default function DocumentsPage() {
                         variant="outline"
                         onClick={() => refetch()}
                         disabled={isLoading}
+                        className="rounded-xl border-border/40 dark:border-border/50 h-11 px-5"
                     >
                         <RefreshCw
-                            className={`h-4 w-4 mr-2 ${
-                                isLoading ? "animate-spin" : ""
-                            }`}
+                            className={`h-4 w-4 mr-2 opacity-70 ${isLoading ? "animate-spin" : ""
+                                }`}
                         />
-                        Refresh
+                        Refresh Index
                     </Button>
                     <Link href="/dashboard/upload">
-                        <Button className="gradient-primary border-0">
+                        <Button className="bg-ai-gradient shadow-ai border-none rounded-xl h-11 px-6 font-bold hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]">
                             <Upload className="h-4 w-4 mr-2" />
-                            Upload New
+                            Ingest Assets
                         </Button>
                     </Link>
                 </div>
             </div>
 
-            {/* Filters & Search */}
-            <Card className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                    <div className="flex flex-col lg:flex-row gap-4">
-                        {/* Search */}
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            {/* Search and Filters Hub - Premium Glass */}
+            <Card className="glass border-none shadow-xl overflow-hidden rounded-3xl">
+                <CardContent className="p-6">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Smart Search */}
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
                             <Input
-                                placeholder="Search by filename..."
+                                placeholder="Universal Identity Search..."
                                 value={searchQuery}
                                 onChange={(e) => {
                                     setSearchQuery(e.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className="pl-9"
+                                className="bg-black/5 dark:bg-white/5 border-none pl-11 h-12 rounded-2xl focus:ring-1 focus:ring-primary/40 placeholder:text-muted-foreground/40 font-medium"
                             />
                         </div>
 
-                        {/* Filters */}
-                        <div className="flex flex-wrap gap-3">
+                        {/* Operation Filters */}
+                        <div className="flex flex-wrap items-center gap-3">
                             <Select
                                 value={filterStatus}
                                 onValueChange={(value: FilterStatus) => {
@@ -642,23 +641,17 @@ export default function DocumentsPage() {
                                     setCurrentPage(1);
                                 }}
                             >
-                                <SelectTrigger className="w-36">
-                                    <Filter className="h-4 w-4 mr-2" />
-                                    <SelectValue placeholder="Status" />
+                                <SelectTrigger className="w-40 bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl focus:ring-1 focus:ring-primary/40 font-medium">
+                                    <div className="flex items-center gap-2">
+                                        <Filter className="h-4 w-4 text-primary/70" />
+                                        <SelectValue placeholder="Status" />
+                                    </div>
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All Status
-                                    </SelectItem>
-                                    <SelectItem value="completed">
-                                        Completed
-                                    </SelectItem>
-                                    <SelectItem value="processing">
-                                        Processing
-                                    </SelectItem>
-                                    <SelectItem value="failed">
-                                        Failed
-                                    </SelectItem>
+                                <SelectContent className="glass border-black/5 dark:border-white/10 rounded-xl">
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="completed">Completed</SelectItem>
+                                    <SelectItem value="processing">Processing</SelectItem>
+                                    <SelectItem value="failed">Failed</SelectItem>
                                 </SelectContent>
                             </Select>
 
@@ -669,18 +662,18 @@ export default function DocumentsPage() {
                                     setCurrentPage(1);
                                 }}
                             >
-                                <SelectTrigger className="w-36">
-                                    <FileType className="h-4 w-4 mr-2" />
-                                    <SelectValue placeholder="Type" />
+                                <SelectTrigger className="w-40 bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl focus:ring-1 focus:ring-primary/40 font-medium">
+                                    <div className="flex items-center gap-2">
+                                        <FileType className="h-4 w-4 text-primary/70" />
+                                        <SelectValue placeholder="Format" />
+                                    </div>
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All Types
-                                    </SelectItem>
-                                    <SelectItem value="pdf">PDF</SelectItem>
-                                    <SelectItem value="word">Word</SelectItem>
-                                    <SelectItem value="xml">XML</SelectItem>
-                                    <SelectItem value="text">Text</SelectItem>
+                                <SelectContent className="glass border-black/5 dark:border-white/10 rounded-xl">
+                                    <SelectItem value="all">All Formats</SelectItem>
+                                    <SelectItem value="pdf">PDF Artifact</SelectItem>
+                                    <SelectItem value="word">Word Doc</SelectItem>
+                                    <SelectItem value="xml">XML Schema</SelectItem>
+                                    <SelectItem value="text">Flat Text</SelectItem>
                                 </SelectContent>
                             </Select>
 
@@ -691,17 +684,15 @@ export default function DocumentsPage() {
                                     setCurrentPage(1);
                                 }}
                             >
-                                <SelectTrigger className="w-48">
-                                    <Building2 className="h-4 w-4 mr-2" />
-                                    <SelectValue placeholder="Organization" />
+                                <SelectTrigger className="w-52 bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl focus:ring-1 focus:ring-primary/40 font-medium">
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="h-4 w-4 text-primary/70" />
+                                        <SelectValue placeholder="Nexus" />
+                                    </div>
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All Documents
-                                    </SelectItem>
-                                    <SelectItem value="personal">
-                                        Personal Only
-                                    </SelectItem>
+                                <SelectContent className="glass border-black/5 dark:border-white/10 rounded-xl">
+                                    <SelectItem value="all">All Networks</SelectItem>
+                                    <SelectItem value="personal">Personal Vault</SelectItem>
                                     {organizations?.map((org) => (
                                         <SelectItem key={org.id} value={org.id}>
                                             {org.name}
@@ -710,62 +701,24 @@ export default function DocumentsPage() {
                                 </SelectContent>
                             </Select>
 
-                            <Select
-                                value={`${sortField}-${sortOrder}`}
-                                onValueChange={(value) => {
-                                    const [field, order] = value.split("-") as [
-                                        SortField,
-                                        SortOrder
-                                    ];
-                                    setSortField(field);
-                                    setSortOrder(order);
-                                }}
-                            >
-                                <SelectTrigger className="w-44">
-                                    <Calendar className="h-4 w-4 mr-2" />
-                                    <SelectValue placeholder="Sort by" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="createdAt-desc">
-                                        Newest First
-                                    </SelectItem>
-                                    <SelectItem value="createdAt-asc">
-                                        Oldest First
-                                    </SelectItem>
-                                    <SelectItem value="filename-asc">
-                                        Name A-Z
-                                    </SelectItem>
-                                    <SelectItem value="filename-desc">
-                                        Name Z-A
-                                    </SelectItem>
-                                    <SelectItem value="size-desc">
-                                        Largest First
-                                    </SelectItem>
-                                    <SelectItem value="size-asc">
-                                        Smallest First
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="w-px h-8 bg-border/40 dark:bg-border/50 mx-1 hidden lg:block" />
 
-                            {/* View toggle */}
-                            <div className="flex items-center border rounded-lg p-1">
+                            <div className="flex items-center bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
                                 <button
                                     onClick={() => setViewMode("table")}
-                                    className={`p-2 rounded ${
-                                        viewMode === "table"
-                                            ? "bg-slate-100 dark:bg-slate-700"
-                                            : ""
-                                    }`}
+                                    className={`p-2.5 rounded-xl transition-all ${viewMode === "table"
+                                        ? "bg-background shadow-sm text-primary"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                                        }`}
                                 >
                                     <List className="h-4 w-4" />
                                 </button>
                                 <button
                                     onClick={() => setViewMode("grid")}
-                                    className={`p-2 rounded ${
-                                        viewMode === "grid"
-                                            ? "bg-slate-100 dark:bg-slate-700"
-                                            : ""
-                                    }`}
+                                    className={`p-2.5 rounded-xl transition-all ${viewMode === "grid"
+                                        ? "bg-background shadow-sm text-primary"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                                        }`}
                                 >
                                     <Grid className="h-4 w-4" />
                                 </button>
@@ -773,27 +726,33 @@ export default function DocumentsPage() {
                         </div>
                     </div>
 
-                    {/* Bulk actions */}
+                    {/* Bulk Operations Overlay */}
                     {selectedIds.size > 0 && (
-                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center gap-4">
-                            <span className="text-sm text-slate-600 dark:text-slate-400">
-                                {selectedIds.size} selected
-                            </span>
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={handleBulkDelete}
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete Selected
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setSelectedIds(new Set())}
-                            >
-                                Clear Selection
-                            </Button>
+                        <div className="mt-8 pt-6 border-t border-black/5 dark:border-white/5 flex items-center justify-between animate-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4">
+                                <div className="px-5 py-2 bg-primary/10 text-primary font-black uppercase tracking-widest text-[10px] rounded-full shadow-sm">
+                                    {selectedIds.size} Neural Assets Targeted
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedIds(new Set())}
+                                    className="text-muted-foreground hover:text-foreground font-black uppercase tracking-widest text-[10px] h-9 rounded-xl px-4"
+                                >
+                                    Cancel Selection
+                                </Button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={handleBulkDelete}
+                                    className="rounded-xl font-black uppercase tracking-widest text-[10px] px-6 h-10 shadow-lg shadow-rose-500/20"
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Purge Selection
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </CardContent>
@@ -801,90 +760,97 @@ export default function DocumentsPage() {
 
             {/* Documents List */}
             {isLoading ? (
-                <Card className="border-0 shadow-sm">
-                    <CardContent className="p-12 text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="mt-4 text-slate-500">
-                            Loading documents...
+                <Card className="glass border-none shadow-xl rounded-[2rem] overflow-hidden">
+                    <CardContent className="p-32 text-center">
+                        <div className="relative w-20 h-20 mx-auto mb-8">
+                            <div className="absolute inset-0 rounded-full border-t-2 border-primary animate-spin"></div>
+                            <div className="absolute inset-2 rounded-full border-b-2 border-primary/30 animate-spin-slow"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <RefreshCw className="h-6 w-6 text-primary animate-pulse" />
+                            </div>
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">
+                            Synchronizing Neural Index...
                         </p>
                     </CardContent>
                 </Card>
             ) : paginatedDocuments.length === 0 ? (
-                <Card className="border-0 shadow-sm">
-                    <CardContent className="p-12 text-center">
-                        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                            <FileText className="h-8 w-8 text-slate-400" />
+                <Card className="glass border-none shadow-xl rounded-[2rem] overflow-hidden">
+                    <CardContent className="p-32 text-center">
+                        <div className="w-24 h-24 rounded-[2rem] bg-black/5 dark:bg-white/5 flex items-center justify-center mx-auto mb-8 relative group">
+                            <div className="absolute inset-0 bg-primary/20 rounded-[2rem] blur-2xl group-hover:bg-primary/30 transition-all"></div>
+                            <FileText className="h-10 w-10 text-primary relative z-10" />
                         </div>
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
-                            No documents found
+                        <h3 className="text-2xl font-bold text-foreground mb-3">
+                            Neural Index Vacant
                         </h3>
-                        <p className="text-slate-500 dark:text-slate-400 mb-4">
+                        <p className="text-sm text-muted-foreground/80 mb-8 max-w-sm mx-auto leading-relaxed">
                             {searchQuery ||
-                            filterStatus !== "all" ||
-                            filterType !== "all"
-                                ? "Try adjusting your filters"
-                                : "Upload your first document to get started"}
+                                filterStatus !== "all" ||
+                                filterType !== "all"
+                                ? "No intelligence assets match your current filtering protocols. Adjust your parameters to locate data."
+                                : "Your knowledge base is currently offline. Initialize data ingestion to populate the neural network."}
                         </p>
                         {!searchQuery &&
                             filterStatus === "all" &&
                             filterType === "all" && (
                                 <Link href="/dashboard/upload">
-                                    <Button className="gradient-primary border-0">
+                                    <Button className="gradient-primary border-0 rounded-xl px-8 h-12 shadow-lg shadow-primary/20">
                                         <Upload className="h-4 w-4 mr-2" />
-                                        Upload Document
+                                        Upload Intelligence
                                     </Button>
                                 </Link>
                             )}
                     </CardContent>
                 </Card>
             ) : viewMode === "table" ? (
-                /* Table View */
-                <Card className="border-0 shadow-sm overflow-hidden">
+                /* Table View - Sophisticated AI List */
+                <Card className="glass border-none shadow-xl overflow-hidden rounded-[2rem]">
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-slate-50 dark:bg-slate-800">
-                                <tr>
-                                    <th className="px-4 py-3 text-left">
+                            <thead>
+                                <tr className="border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5">
+                                    <th className="px-6 py-4 text-left">
                                         <Checkbox
                                             checked={
                                                 selectedIds.size ===
-                                                    paginatedDocuments.length &&
+                                                paginatedDocuments.length &&
                                                 paginatedDocuments.length > 0
                                             }
                                             onCheckedChange={handleSelectAll}
+                                            className="border-primary/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                         />
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Document
+                                    <th className="px-6 py-4 text-left text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                        Asset Identity
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Type
+                                    <th className="px-6 py-4 text-left text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                        Format
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Size
+                                    <th className="px-6 py-4 text-left text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                        Vectors
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-left text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                         Status
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Date
+                                    <th className="px-6 py-4 text-left text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                        Indexed
                                     </th>
-                                    <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th className="px-6 py-4 text-right text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            <tbody className="divide-y divide-black/5 dark:divide-white/5">
                                 {paginatedDocuments.map((doc) => (
                                     <tr
                                         key={doc.id}
-                                        className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
-                                            selectedIds.has(doc.id)
-                                                ? "bg-blue-50 dark:bg-blue-900/10"
-                                                : ""
-                                        }`}
+                                        className={`group hover:bg-black/5 dark:hover:bg-white/5 transition-all ${selectedIds.has(doc.id)
+                                            ? "bg-primary/5 dark:bg-primary/10"
+                                            : ""
+                                            }`}
                                     >
-                                        <td className="px-4 py-3">
+                                        <td className="px-6 py-4">
                                             <Checkbox
                                                 checked={selectedIds.has(
                                                     doc.id
@@ -892,12 +858,13 @@ export default function DocumentsPage() {
                                                 onCheckedChange={() =>
                                                     handleSelect(doc.id)
                                                 }
+                                                className="border-primary/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                             />
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-3">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
                                                 <div
-                                                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold ${getFileTypeColor(
+                                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center text-[10px] font-black shadow-inner transition-transform group-hover:scale-110 ${getFileTypeColor(
                                                         doc.mimeType
                                                     )}`}
                                                 >
@@ -907,7 +874,7 @@ export default function DocumentsPage() {
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-medium text-slate-800 dark:text-white truncate max-w-xs">
+                                                        <p className="font-bold text-foreground/90 truncate max-w-[200px] group-hover:text-primary transition-colors">
                                                             {doc.filename}
                                                         </p>
                                                         {getVisibilityIcon(
@@ -918,68 +885,77 @@ export default function DocumentsPage() {
                                                         )}
                                                         {(doc as any)
                                                             .isShared && (
-                                                            <div title="Shared with you">
-                                                                <Share2 className="h-3 w-3 text-blue-500" />
-                                                            </div>
-                                                        )}
+                                                                <div title="Shared with you" className="p-1 bg-blue-500/10 rounded-md">
+                                                                    <Share2 className="h-3 w-3 text-blue-500" />
+                                                                </div>
+                                                            )}
                                                     </div>
                                                     {(doc as any)
                                                         .organizationId && (
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
-                                                            <Building2 className="h-3 w-3" />
-                                                            {getOrganizationName(
-                                                                (doc as any)
-                                                                    .organizationId
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="text-[10px] text-muted-foreground opacity-60 font-medium mt-1 flex items-center gap-1 uppercase tracking-tighter">
+                                                                <Building2 className="h-3 w-3" />
+                                                                {getOrganizationName(
+                                                                    (doc as any)
+                                                                        .organizationId
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3">
+                                        <td className="px-6 py-4">
                                             <span
-                                                className={`px-2 py-1 rounded text-xs font-medium ${getFileTypeColor(
+                                                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${getFileTypeColor(
                                                     doc.mimeType
                                                 )}`}
                                             >
                                                 {getFileTypeIcon(doc.mimeType)}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                                        <td className="px-6 py-4 text-xs font-bold text-muted-foreground">
                                             {formatBytes(doc.size)}
                                         </td>
-                                        <td className="px-4 py-3">
+                                        <td className="px-6 py-4">
                                             {getStatusBadge(
                                                 doc.processingStatus
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                                        <td className="px-6 py-4 text-xs font-bold text-muted-foreground">
                                             {formatDate(doc.createdAt)}
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center justify-end gap-1">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleDownload(doc)}
+                                                    className="w-10 h-10 rounded-xl hover:bg-primary/10 hover:text-primary"
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                </Button>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger
                                                         asChild
                                                     >
                                                         <Button
                                                             variant="ghost"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0"
+                                                            size="icon"
+                                                            className="w-10 h-10 rounded-xl hover:bg-black/10 dark:hover:bg-white/10"
                                                         >
                                                             <MoreVertical className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
+                                                    <DropdownMenuContent align="end" className="glass border-black/5 dark:border-white/10 rounded-xl shadow-2xl">
                                                         <DropdownMenuItem
                                                             onClick={() =>
                                                                 handleDownload(
                                                                     doc
                                                                 )
                                                             }
+                                                            className="rounded-lg focus:bg-primary/10"
                                                         >
                                                             <Download className="h-4 w-4 mr-2" />
-                                                            Download
+                                                            Download Binary
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             onClick={() =>
@@ -987,25 +963,26 @@ export default function DocumentsPage() {
                                                                     doc.id
                                                                 )
                                                             }
+                                                            className="rounded-lg focus:bg-primary/10"
                                                         >
                                                             <Share2 className="h-4 w-4 mr-2" />
-                                                            Share
+                                                            Permissions & Share
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem>
+                                                        <DropdownMenuItem className="rounded-lg focus:bg-primary/10">
                                                             <Eye className="h-4 w-4 mr-2" />
-                                                            View Details
+                                                            Inspect Metadata
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuSeparator className="bg-black/5 dark:bg-white/5" />
                                                         <DropdownMenuItem
                                                             onClick={() =>
                                                                 handleDelete(
                                                                     doc.id
                                                                 )
                                                             }
-                                                            className="text-red-600"
+                                                            className="text-rose-500 rounded-lg focus:bg-rose-500/10 focus:text-rose-600"
                                                         >
                                                             <Trash2 className="h-4 w-4 mr-2" />
-                                                            Delete
+                                                            Purge Asset
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -1018,37 +995,38 @@ export default function DocumentsPage() {
                     </div>
                 </Card>
             ) : (
-                /* Grid View */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                /* Grid View - Premium Asset Cards */
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {paginatedDocuments.map((doc) => (
                         <Card
                             key={doc.id}
-                            className={`border-0 shadow-sm card-hover cursor-pointer ${
-                                selectedIds.has(doc.id)
-                                    ? "ring-2 ring-blue-500"
-                                    : ""
-                            }`}
+                            className={`glass border-none shadow-xl card-hover cursor-pointer rounded-[2rem] overflow-hidden group/grid ${selectedIds.has(doc.id)
+                                ? "ring-2 ring-primary bg-primary/5"
+                                : ""
+                                }`}
                             onClick={() => handleSelect(doc.id)}
                         >
-                            <CardContent className="p-4">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-center gap-2">
+                            <CardContent className="p-8">
+                                <div className="flex items-start justify-between mb-8">
+                                    <div className="flex items-center gap-3">
                                         <div
-                                            className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold ${getFileTypeColor(
+                                            className={`w-14 h-14 rounded-2xl flex items-center justify-center text-[10px] font-black shadow-inner transition-transform group-hover/grid:scale-110 ${getFileTypeColor(
                                                 doc.mimeType
                                             )}`}
                                         >
                                             {getFileTypeIcon(doc.mimeType)}
                                         </div>
-                                        {getVisibilityIcon(
-                                            (doc as any).visibility,
-                                            (doc as any).organizationId
-                                        )}
-                                        {(doc as any).isShared && (
-                                            <div title="Shared with you">
-                                                <Share2 className="h-3 w-3 text-blue-500" />
-                                            </div>
-                                        )}
+                                        <div className="flex flex-col gap-1.5">
+                                            {getVisibilityIcon(
+                                                (doc as any).visibility,
+                                                (doc as any).organizationId
+                                            )}
+                                            {(doc as any).isShared && (
+                                                <div title="Shared with you" className="p-1 bg-blue-500/10 rounded-md w-fit">
+                                                    <Share2 className="h-3 w-3 text-blue-500" />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger
@@ -1057,77 +1035,84 @@ export default function DocumentsPage() {
                                         >
                                             <Button
                                                 variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0"
+                                                size="icon"
+                                                className="w-10 h-10 rounded-xl hover:bg-black/10 dark:hover:bg-white/10"
                                             >
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuContent align="end" className="glass border-black/5 dark:border-white/10 rounded-xl shadow-2xl">
                                             <DropdownMenuItem
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleDownload(doc);
                                                 }}
+                                                className="rounded-lg focus:bg-primary/10"
                                             >
                                                 <Download className="h-4 w-4 mr-2" />
-                                                Download
+                                                Download binary
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleShare(doc.id);
                                                 }}
+                                                className="rounded-lg focus:bg-primary/10"
                                             >
                                                 <Share2 className="h-4 w-4 mr-2" />
-                                                Share
+                                                Permissions
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
-                                                onClick={(e) =>
-                                                    e.stopPropagation()
-                                                }
+                                                className="rounded-lg focus:bg-primary/10"
+                                                onClick={(e) => e.stopPropagation()}
                                             >
                                                 <Eye className="h-4 w-4 mr-2" />
-                                                View Details
+                                                Metadata
                                             </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
+                                            <DropdownMenuSeparator className="bg-black/5 dark:bg-white/5" />
                                             <DropdownMenuItem
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleDelete(doc.id);
                                                 }}
-                                                className="text-red-600"
+                                                className="text-rose-500 rounded-lg focus:bg-rose-500/10 focus:text-rose-600"
                                             >
                                                 <Trash2 className="h-4 w-4 mr-2" />
-                                                Delete
+                                                Purge Asset
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
 
-                                <h3 className="font-medium text-slate-800 dark:text-white truncate mb-1">
-                                    {doc.filename}
-                                </h3>
-
-                                {(doc as any).organizationId && (
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-                                        <Building2 className="h-3 w-3" />
-                                        {getOrganizationName(
-                                            (doc as any).organizationId
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-foreground/90 truncate mb-1 group-hover/grid:text-primary transition-colors">
+                                            {doc.filename}
+                                        </h3>
+                                        {(doc as any).organizationId && (
+                                            <p className="text-[10px] text-muted-foreground opacity-60 font-medium flex items-center gap-1 uppercase tracking-widest">
+                                                <Building2 className="h-3 w-3" />
+                                                {getOrganizationName(
+                                                    (doc as any).organizationId
+                                                )}
+                                            </p>
                                         )}
-                                    </p>
-                                )}
+                                    </div>
 
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500">
-                                        {formatBytes(doc.size)}
-                                    </span>
-                                    {getStatusBadge(doc.processingStatus)}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-muted-foreground/50">
+                                            {formatBytes(doc.size)}
+                                        </span>
+                                        {getStatusBadge(doc.processingStatus)}
+                                    </div>
+
+                                    <div className="pt-4 border-t border-black/5 dark:border-white/5">
+                                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground opacity-40 uppercase tracking-tighter">
+                                            <Calendar className="h-3 w-3" />
+                                            <span>Map Registered: {formatDate(doc.createdAt)}</span>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <p className="text-xs text-slate-400 mt-2">
-                                    {formatDate(doc.createdAt)}
-                                </p>
                             </CardContent>
                         </Card>
                     ))}
@@ -1192,40 +1177,39 @@ export default function DocumentsPage() {
                 </div>
             )}
 
-            {/* Delete Confirmation Dialog */}
             <AlertDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
             >
-                <AlertDialogContent>
+                <AlertDialogContent className="glass border-none shadow-2xl rounded-[2rem]">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="text-2xl font-bold">Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogDescription className="text-muted-foreground/80">
                             {deleteTarget
-                                ? "Are you sure you want to delete this document? This action cannot be undone."
-                                : `Are you sure you want to delete ${selectedIds.size} document(s)? This action cannot be undone.`}
+                                ? "This asset will be permanently purged from the neural index. This action is irreversible."
+                                : `Are you sure you want to purge ${selectedIds.size} document(s)? All vector data will be lost.`}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogFooter className="gap-2">
+                        <AlertDialogCancel className="rounded-xl border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5">
+                            Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmDelete}
-                            className="bg-red-600 text-white hover:bg-red-700"
+                            className="bg-rose-500 text-white hover:bg-rose-600 rounded-xl px-6"
                         >
-                            Delete
+                            Purge Asset
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Share Dialog */}
             <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-                <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto glass border-none shadow-2xl rounded-[2rem]">
                     <DialogHeader>
-                        <DialogTitle>Share Document</DialogTitle>
-                        <DialogDescription>
-                            Share this document with users, organizations, or
-                            make it public
+                        <DialogTitle className="text-2xl font-bold">Permissions & Neural Sharing</DialogTitle>
+                        <DialogDescription className="text-muted-foreground/80">
+                            Configure access parameters for this intelligence asset across users and organizations.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6 py-4">
@@ -1261,14 +1245,15 @@ export default function DocumentsPage() {
                         </div>
 
                         {/* Permissions Selection */}
-                        <div className="space-y-2">
-                            <Label>Permissions</Label>
-                            <div className="grid grid-cols-2 gap-2 p-3 rounded-lg border bg-slate-50 dark:bg-slate-800">
+                        <div className="space-y-4">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Access Protocol</Label>
+                            <div className="grid grid-cols-2 gap-3 p-4 rounded-[1.5rem] border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5">
                                 {Object.entries(permissionLabels).map(
                                     ([perm, label]) => (
                                         <div
                                             key={perm}
-                                            className="flex items-center space-x-2"
+                                            className="flex items-center space-x-3 group cursor-pointer"
+                                            onClick={() => togglePermission(perm)}
                                         >
                                             <Checkbox
                                                 id={`perm-${perm}`}
@@ -1278,10 +1263,11 @@ export default function DocumentsPage() {
                                                 onCheckedChange={() =>
                                                     togglePermission(perm)
                                                 }
+                                                className="border-primary/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                             />
                                             <Label
                                                 htmlFor={`perm-${perm}`}
-                                                className="text-sm font-normal cursor-pointer"
+                                                className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors cursor-pointer"
                                             >
                                                 {label}
                                             </Label>
@@ -1293,35 +1279,36 @@ export default function DocumentsPage() {
 
                         {/* Current Shares */}
                         {shareInfo && (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {/* Shared Users */}
                                 {shareInfo.sharedUsers &&
                                     shareInfo.sharedUsers.length > 0 && (
-                                        <div className="space-y-2">
-                                            <Label>Shared with Users</Label>
-                                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Active Collaborators</Label>
+                                            <div className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
                                                 {shareInfo.sharedUsers.map(
                                                     (user) => (
                                                         <div
                                                             key={user.id}
-                                                            className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800"
+                                                            className="flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 group"
                                                         >
                                                             <div className="flex-1">
-                                                                <p className="text-sm font-medium">
+                                                                <p className="text-sm font-bold">
                                                                     {user.name}
                                                                 </p>
-                                                                <p className="text-xs text-slate-500">
+                                                                <p className="text-[10px] font-medium text-muted-foreground opacity-60">
                                                                     {user.email}
                                                                 </p>
-                                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                                                    Permissions:{" "}
-                                                                    {user.permissions.join(
-                                                                        ", "
-                                                                    )}
-                                                                </p>
+                                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                                    {user.permissions.map(p => (
+                                                                        <span key={p} className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                                                            {p}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
                                                             </div>
                                                             <Button
-                                                                size="sm"
+                                                                size="icon"
                                                                 variant="ghost"
                                                                 onClick={() =>
                                                                     handleUnshare(
@@ -1329,7 +1316,7 @@ export default function DocumentsPage() {
                                                                         user.id
                                                                     )
                                                                 }
-                                                                className="text-red-600 hover:text-red-700"
+                                                                className="h-8 w-8 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
                                                             >
                                                                 <UserMinus className="h-4 w-4" />
                                                             </Button>
@@ -1343,31 +1330,32 @@ export default function DocumentsPage() {
                                 {/* Shared Organizations */}
                                 {shareInfo.sharedOrganizations &&
                                     shareInfo.sharedOrganizations.length >
-                                        0 && (
-                                        <div className="space-y-2">
-                                            <Label>
-                                                Shared with Organizations
+                                    0 && (
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                                Enterprise Nodes
                                             </Label>
-                                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                                            <div className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
                                                 {shareInfo.sharedOrganizations.map(
                                                     (org) => (
                                                         <div
                                                             key={org.id}
-                                                            className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800"
+                                                            className="flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 group"
                                                         >
                                                             <div className="flex-1">
-                                                                <p className="text-sm font-medium">
+                                                                <p className="text-sm font-bold">
                                                                     {org.name}
                                                                 </p>
-                                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                                                    Permissions:{" "}
-                                                                    {org.permissions.join(
-                                                                        ", "
-                                                                    )}
-                                                                </p>
+                                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                                    {org.permissions.map(p => (
+                                                                        <span key={p} className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                                                            {p}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
                                                             </div>
                                                             <Button
-                                                                size="sm"
+                                                                size="icon"
                                                                 variant="ghost"
                                                                 onClick={() =>
                                                                     handleUnshare(
@@ -1375,7 +1363,7 @@ export default function DocumentsPage() {
                                                                         org.id
                                                                     )
                                                                 }
-                                                                className="text-red-600 hover:text-red-700"
+                                                                className="h-8 w-8 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
                                                             >
                                                                 <UserMinus className="h-4 w-4" />
                                                             </Button>
@@ -1389,27 +1377,28 @@ export default function DocumentsPage() {
                                 {/* Public Share */}
                                 {shareInfo.publicShare &&
                                     shareInfo.publicShare.enabled && (
-                                        <div className="space-y-2">
-                                            <Label>Public Share</Label>
-                                            <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Neural Broadcast</Label>
+                                            <div className="flex items-center justify-between p-4 rounded-2xl bg-primary/5 border border-primary/10 group">
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-medium">
-                                                        Publicly accessible
+                                                    <p className="text-sm font-bold text-primary">
+                                                        Authorized Public Access
                                                     </p>
-                                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                                        Permissions:{" "}
-                                                        {shareInfo.publicShare.permissions.join(
-                                                            ", "
-                                                        )}
-                                                    </p>
+                                                    <div className="flex flex-wrap gap-1 mt-2">
+                                                        {shareInfo.publicShare.permissions.map(p => (
+                                                            <span key={p} className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-primary/20 text-primary">
+                                                                {p}
+                                                            </span>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                                 <Button
-                                                    size="sm"
+                                                    size="icon"
                                                     variant="ghost"
                                                     onClick={() =>
                                                         handleUnshare("public")
                                                     }
-                                                    className="text-red-600 hover:text-red-700"
+                                                    className="h-8 w-8 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
                                                 >
                                                     <UserMinus className="h-4 w-4" />
                                                 </Button>
@@ -1437,7 +1426,7 @@ export default function DocumentsPage() {
                                 </div>
 
                                 {users && users.length > 0 && (
-                                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                         {users
                                             .filter(
                                                 (user) =>
@@ -1449,13 +1438,12 @@ export default function DocumentsPage() {
                                             .map((user) => (
                                                 <div
                                                     key={user.id}
-                                                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                                                        selectedUserIds.has(
-                                                            user.id
-                                                        )
-                                                            ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                                                            : "bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                                    }`}
+                                                    className={`flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all border ${selectedUserIds.has(
+                                                        user.id
+                                                    )
+                                                        ? "bg-primary/10 border-primary/20 shadow-inner"
+                                                        : "bg-black/5 dark:bg-white/5 border-transparent hover:border-black/10 dark:hover:border-white/10"
+                                                        }`}
                                                     onClick={() =>
                                                         toggleUserSelection(
                                                             user.id
@@ -1463,18 +1451,18 @@ export default function DocumentsPage() {
                                                     }
                                                 >
                                                     <div>
-                                                        <p className="text-sm font-medium">
+                                                        <p className="text-sm font-bold">
                                                             {user.name}
                                                         </p>
-                                                        <p className="text-xs text-slate-500">
+                                                        <p className="text-[10px] font-medium text-muted-foreground opacity-60">
                                                             {user.email}
                                                         </p>
                                                     </div>
                                                     {selectedUserIds.has(
                                                         user.id
                                                     ) && (
-                                                        <CheckCircle className="h-5 w-5 text-blue-600" />
-                                                    )}
+                                                            <CheckCircle className="h-5 w-5 text-primary" />
+                                                        )}
                                                 </div>
                                             ))}
                                     </div>
@@ -1501,7 +1489,7 @@ export default function DocumentsPage() {
                         {shareType === "organization" && (
                             <div className="space-y-2">
                                 <Label>Select Organizations</Label>
-                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                     {organizations
                                         ?.filter(
                                             (org) =>
@@ -1512,13 +1500,12 @@ export default function DocumentsPage() {
                                         .map((org) => (
                                             <div
                                                 key={org.id}
-                                                className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                                                    selectedOrganizationIds.has(
-                                                        org.id
-                                                    )
-                                                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                                                        : "bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                                }`}
+                                                className={`flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all border ${selectedOrganizationIds.has(
+                                                    org.id
+                                                )
+                                                    ? "bg-primary/10 border-primary/20 shadow-inner"
+                                                    : "bg-black/5 dark:bg-white/5 border-transparent hover:border-black/10 dark:hover:border-white/10"
+                                                    }`}
                                                 onClick={() =>
                                                     toggleOrganizationSelection(
                                                         org.id
@@ -1526,42 +1513,45 @@ export default function DocumentsPage() {
                                                 }
                                             >
                                                 <div>
-                                                    <p className="text-sm font-medium">
+                                                    <p className="text-sm font-bold">
                                                         {org.name}
                                                     </p>
                                                 </div>
                                                 {selectedOrganizationIds.has(
                                                     org.id
                                                 ) && (
-                                                    <CheckCircle className="h-5 w-5 text-blue-600" />
-                                                )}
+                                                        <CheckCircle className="h-5 w-5 text-primary" />
+                                                    )}
                                             </div>
                                         ))}
                                 </div>
                                 {(!organizations ||
                                     organizations.length === 0) && (
-                                    <p className="text-sm text-slate-500 text-center py-4">
-                                        No organizations available
-                                    </p>
-                                )}
+                                        <p className="text-sm text-slate-500 text-center py-4">
+                                            No organizations available
+                                        </p>
+                                    )}
                             </div>
                         )}
 
                         {/* Public Share Info */}
                         {shareType === "public" && (
-                            <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                                    <strong>Warning:</strong> Making this
-                                    document public will allow anyone with the
-                                    link to access it with the selected
-                                    permissions.
+                            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+                                <p className="text-xs font-bold text-rose-600 dark:text-rose-400 flex gap-2 items-center">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    SECURITY ALERT
+                                </p>
+                                <p className="text-[10px] font-medium text-rose-500/80 mt-1 leading-relaxed">
+                                    Broadcasting this asset will enable global access for anyone possessing the neural link.
+                                    Exercise extreme caution with sensitive intelligence.
                                 </p>
                             </div>
                         )}
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="gap-2">
                         <Button
-                            variant="outline"
+                            variant="ghost"
+                            className="rounded-xl hover:bg-black/5 dark:hover:bg-white/5"
                             onClick={() => {
                                 setShareDialogOpen(false);
                                 setSelectedUserIds(new Set());
@@ -1582,15 +1572,15 @@ export default function DocumentsPage() {
                                 selectedPermissions.size === 0 ||
                                 shareMutation.isPending
                             }
-                            className="gradient-primary border-0"
+                            className="gradient-primary border-0 rounded-xl px-8 shadow-lg shadow-primary/20"
                         >
                             {shareMutation.isPending
-                                ? "Sharing..."
+                                ? "Synchronizing..."
                                 : shareType === "user"
-                                ? `Share with ${selectedUserIds.size} user(s)`
-                                : shareType === "organization"
-                                ? `Share with ${selectedOrganizationIds.size} organization(s)`
-                                : "Make Public"}
+                                    ? `Authorize ${selectedUserIds.size} User(s)`
+                                    : shareType === "organization"
+                                        ? `Authorize ${selectedOrganizationIds.size} Org(s)`
+                                        : "Initialize Broadcast"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -16,6 +16,7 @@ import {
   Database,
   TrendingUp,
   Eye,
+  MessageSquare,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -69,9 +70,9 @@ export default function DashboardPage() {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (!response.ok) throw new Error("Download failed");
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -81,7 +82,7 @@ export default function DashboardPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       toast({ title: "Success", description: "Download started" });
     } catch (error) {
       toast({ title: "Error", description: "Failed to download file", variant: "destructive" });
@@ -126,27 +127,57 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8">
-      {/* Stats Grid - Mobile Optimized */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="p-6 sm:p-8 lg:p-10 space-y-10 max-w-[1600px] mx-auto animate-fadeIn">
+      {/* Page Header Area */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
+          <p className="text-muted-foreground mt-1">
+            Welcome back. Here's what's happening with your documents today.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" className="rounded-xl border-border/50 h-10 px-4 font-medium" onClick={() => refetch()}>
+            <Clock className="mr-2 h-4 w-4 opacity-70" />
+            Refresh
+          </Button>
+          <Link href="/dashboard/upload">
+            <Button className="rounded-xl bg-ai-gradient hover:opacity-90 shadow-ai border-none h-10 px-6 font-bold">
+              <Upload className="mr-2 h-4 w-4" />
+              Upload New
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats Grid - Premium Glass Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="card-hover border">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">
+          <Card key={index} className="glass card-hover border-none relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
+            <CardContent className="p-6 relative z-10">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">
                     {stat.title}
                   </p>
-                  <p className="text-xl sm:text-2xl font-semibold text-foreground truncate">
+                  <h3 className="text-3xl font-bold tracking-tight">
                     {stat.value}
-                  </p>
-                  <div className="flex items-center gap-1 mt-2">
-                    <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground truncate">{stat.change}</span>
+                  </h3>
+                  <div className="flex items-center gap-2 mt-4">
+                    <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold">
+                      <TrendingUp className="h-3 w-3" />
+                      {stat.change}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">vs last month</span>
                   </div>
                 </div>
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${stat.gradient} flex items-center justify-center flex-shrink-0`}>
-                  <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${stat.title === "Total Documents" ? "from-blue-500 to-indigo-600" :
+                  stat.title === "Processed" ? "from-emerald-400 to-teal-600" :
+                    stat.title === "Processing" ? "from-amber-400 to-orange-600" :
+                      "from-rose-500 to-pink-600"
+                  } flex items-center justify-center shadow-lg transform transition-transform group-hover:rotate-12 duration-300`}>
+                  <stat.icon className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -154,273 +185,133 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Quick Actions - Mobile Optimized */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <Link href="/dashboard/upload">
-          <Card className="card-hover border cursor-pointer group touch-manipulation">
-            <CardContent className="p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
-                <Upload className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-medium text-foreground text-sm truncate">
-                  Upload Documents
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  Add new files
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/search">
-          <Card className="card-hover border cursor-pointer group touch-manipulation">
-            <CardContent className="p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
-                <Search className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-medium text-foreground text-sm truncate">
-                  Search & Chat
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  Ask questions
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/files">
-          <Card className="card-hover border cursor-pointer group touch-manipulation">
-            <CardContent className="p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
-                <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-medium text-foreground text-sm truncate">
-                  Find Files
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  Semantic search
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+      {/* Quick Actions - Floating Hover Effect */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { title: "Upload Documents", desc: "Add new files for AI analysis", icon: Upload, href: "/dashboard/upload", color: "from-blue-500/10 to-transparent" },
+          { title: "Search & Chat", desc: "Query your documents with AI", icon: MessageSquare, href: "/dashboard/search", color: "from-purple-500/10 to-transparent" },
+          { title: "Semantic Search", desc: "Find files by conceptual meaning", icon: Search, href: "/dashboard/files", color: "from-emerald-500/10 to-transparent" }
+        ].map((action, i) => (
+          <Link key={i} href={action.href}>
+            <Card className="glass card-hover border-none h-full group cursor-pointer relative overflow-hidden">
+              <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+              <CardContent className="p-6 flex items-center gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-accent/50 flex items-center justify-center flex-shrink-0 transition-all group-hover:bg-background group-hover:shadow-ai group-hover:scale-110">
+                  <action.icon className="h-6 w-6 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-lg group-hover:text-primary transition-colors">
+                    {action.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                    {action.desc}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
 
-      {/* Documents Table - Minimalist */}
-      <Card className="border">
-        <CardHeader className="border-b" style={{ borderColor: "hsl(var(--border))" }}>
+      {/* Documents Table - Modern Minimalist */}
+      <Card className="glass border-none shadow-2xl overflow-hidden rounded-3xl">
+        <CardHeader className="p-8 border-b border-black/5 dark:border-white/5 space-y-1">
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">Recent Documents</CardTitle>
-              <CardDescription>
-                Manage and view all your uploaded documents
-              </CardDescription>
-            </div>
-            <Link href="/dashboard/upload">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Upload className="h-4 w-4 mr-2" />
-                Upload New
+            <CardTitle className="text-2xl font-bold tracking-tight">Recent Activity</CardTitle>
+            <Link href="/dashboard/documents">
+              <Button variant="ghost" className="text-primary font-bold hover:bg-primary/5 rounded-xl">
+                View All
+                <TrendingUp className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
+          <CardDescription className="text-base">
+            Track and manage your recently uploaded intelligent assets.
+          </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="flex flex-col items-center justify-center h-80 gap-4">
+              <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <p className="text-muted-foreground font-medium animate-pulse">Analyzing document repository...</p>
             </div>
           ) : !documents || documents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64">
-              <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                <FileText className="h-10 w-10 text-slate-400" />
+            <div className="flex flex-col items-center justify-center h-80 text-center px-6">
+              <div className="w-24 h-24 rounded-full bg-accent/30 flex items-center justify-center mb-6 animate-process shadow-inner">
+                <FileText className="h-10 w-10 text-muted-foreground opacity-50" />
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-center">
-                No documents uploaded yet.
-                <br />
-                Start by uploading your first document!
+              <h4 className="text-xl font-bold">No documents yet</h4>
+              <p className="text-muted-foreground mt-2 max-w-sm">
+                Start building your knowledge base by uploading your first document.
               </p>
-              <Link href="/dashboard/upload" className="mt-4">
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Document
+              <Link href="/dashboard/upload" className="mt-8">
+                <Button className="rounded-xl bg-ai-gradient h-12 px-8 font-bold shadow-ai">
+                  Get Started
                 </Button>
               </Link>
             </div>
           ) : (
-            <>
-              {/* Mobile: Card View, Desktop: Table View */}
-              <div className="block md:hidden space-y-3">
-              {documents.map((doc) => (
-                <Card key={doc.id} className="border">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-md bg-accent flex items-center justify-center flex-shrink-0">
-                        <FileText className="h-5 w-5 text-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm truncate mb-1">
-                          {doc.filename}
-                        </p>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {doc.mimeType} • {formatBytes(doc.size)}
-                        </p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${
-                              doc.processingStatus === "completed"
-                                ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                                : doc.processingStatus === "failed"
-                                ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400"
-                                : "bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400"
-                            }`}
-                          >
-                            {doc.processingStatus === "completed" && (
-                              <CheckCircle className="h-3 w-3" />
-                            )}
-                            {doc.processingStatus === "processing" && (
-                              <Clock className="h-3 w-3 animate-spin" />
-                            )}
-                            {doc.processingStatus === "failed" && (
-                              <AlertCircle className="h-3 w-3" />
-                            )}
-                            {doc.processingStatus}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(doc.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground touch-manipulation"
-                          disabled={doc.processingStatus !== "completed"}
-                          onClick={() => handleDownload(doc)}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive touch-manipulation"
-                              disabled={deleteMutation.isLoading}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="mx-4 max-w-[calc(100vw-2rem)]">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Document?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete "{doc.filename}" and all its
-                                associated data. This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                              <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(doc.id)}
-                                className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
                 <thead>
-                  <tr style={{ borderBottom: "1px solid hsl(var(--border))" }}>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Document
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Size
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Actions
-                    </th>
+                  <tr className="bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5">
+                    <th className="px-8 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest">Document</th>
+                    <th className="px-8 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest">Metadata</th>
+                    <th className="px-8 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest">Status</th>
+                    <th className="px-8 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest">Timestamp</th>
+                    <th className="px-8 py-5 text-right text-xs font-bold text-muted-foreground uppercase tracking-widest">Action</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {documents.map((doc, idx) => (
-                    <tr
-                      key={doc.id}
-                      className="hover:bg-accent/50 transition-colors"
-                      style={{ 
-                        borderBottom: idx < documents.length - 1 ? "1px solid hsl(var(--border))" : "none" 
-                      }}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center">
-                            <FileText className="h-4 w-4 text-foreground" />
+                <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                  {documents.slice(0, 10).map((doc) => (
+                    <tr key={doc.id} className="group hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300">
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-accent shadow-inner flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                            <FileText className="h-5 w-5 text-foreground/70 group-hover:text-primary transition-colors" />
                           </div>
-                          <div>
-                            <p className="font-medium text-foreground text-sm truncate max-w-xs">
+                          <div className="max-w-[240px] lg:max-w-xs">
+                            <p className="font-bold text-sm truncate group-hover:text-primary transition-colors">
                               {doc.filename}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                              {doc.mimeType}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">ID: {doc.id.slice(0, 8)}</span>
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-foreground">
-                        {formatBytes(doc.size)}
+                      <td className="px-8 py-5">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-semibold text-foreground/80">{formatBytes(doc.size)}</span>
+                          <span className="text-[10px] text-muted-foreground font-medium uppercase">{doc.mimeType.split('/')[1] || doc.mimeType}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${
-                            doc.processingStatus === "completed"
-                              ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                              : doc.processingStatus === "failed"
-                              ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400"
-                              : "bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400"
-                          }`}
-                        >
-                          {doc.processingStatus === "completed" && (
-                            <CheckCircle className="h-3 w-3" />
-                          )}
-                          {doc.processingStatus === "processing" && (
-                            <Clock className="h-3 w-3 animate-spin" />
-                          )}
-                          {doc.processingStatus === "failed" && (
-                            <AlertCircle className="h-3 w-3" />
+                      <td className="px-8 py-5">
+                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${doc.processingStatus === "completed"
+                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                          : doc.processingStatus === "failed"
+                            ? "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                            : "bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse"
+                          }`}>
+                          {doc.processingStatus === "processing" ? (
+                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                          ) : (
+                            <div className={`w-2 h-2 rounded-full ${doc.processingStatus === "completed" ? "bg-emerald-500" : "bg-rose-500"}`} />
                           )}
                           {doc.processingStatus}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {formatDate(doc.createdAt)}
+                      <td className="px-8 py-5">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          {formatDate(doc.createdAt)}
+                        </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-8 py-5">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button
-                            size="sm"
+                            size="icon"
                             variant="ghost"
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary text-muted-foreground transition-all"
                             disabled={doc.processingStatus !== "completed"}
                             onClick={() => handleDownload(doc)}
                           >
@@ -429,29 +320,28 @@ export default function DashboardPage() {
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
-                                size="sm"
+                                size="icon"
                                 variant="ghost"
-                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                                disabled={deleteMutation.isLoading}
+                                className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-all"
+                                disabled={deleteMutation.isPending}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="glass border-border/40 dark:border-none rounded-3xl shadow-2xl">
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Document?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This will permanently delete "{doc.filename}" and all its
-                                  associated data. This action cannot be undone.
+                                <AlertDialogTitle className="text-2xl font-bold">Delete Document?</AlertDialogTitle>
+                                <AlertDialogDescription className="text-base text-muted-foreground mt-2">
+                                  This will permanently remove <span className="text-foreground font-bold font-mono">"{doc.filename}"</span> and all AI-extracted insights. This action is irreversible.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogFooter className="mt-8 gap-3">
+                                <AlertDialogCancel className="rounded-xl border-border/50 font-bold">Hold on</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleDelete(doc.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold px-8 shadow-lg shadow-destructive/20"
                                 >
-                                  Delete
+                                  Proceed
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -463,9 +353,17 @@ export default function DashboardPage() {
                 </tbody>
               </table>
             </div>
-            </>
           )}
         </CardContent>
+        <CardFooter className="p-6 bg-black/5 dark:bg-white/5 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground font-medium">
+            Showing {documents?.length ? Math.min(documents.length, 10) : 0} of {documents?.length || 0} documents
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold border-border/40 dark:border-border/50 opacity-50" disabled>Previous</Button>
+            <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold border-border/40 dark:border-border/50 opacity-50" disabled>Next</Button>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );

@@ -110,39 +110,38 @@ export default function OrganizationPage() {
     };
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="p-8 sm:p-10 space-y-10 max-w-6xl mx-auto animate-fadeIn">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
-                        Organizations
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">
-                        Manage your organizations and team access
+                    <h1 className="text-4xl font-bold tracking-tight">Collaboration Hub</h1>
+                    <p className="text-muted-foreground mt-2 text-lg font-medium">
+                        Manage your neural networks and team permissions.
                     </p>
                 </div>
 
                 <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button className="gradient-primary border-0">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create Organization
+                        <Button className="bg-ai-gradient shadow-ai border-none rounded-2xl h-14 px-8 font-bold hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                            <Plus className="h-5 w-5 mr-3" />
+                            Launch New Org
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="glass border-white/10 rounded-[2rem] shadow-3xl">
                         <DialogHeader>
-                            <DialogTitle>Create Organization</DialogTitle>
-                            <DialogDescription>
-                                Create a new organization to collaborate with your team
+                            <DialogTitle className="text-2xl font-bold">Initialize Organization</DialogTitle>
+                            <DialogDescription className="text-muted-foreground">
+                                Create a new shared workspace for your collective intelligence.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Organization Name</Label>
+                        <div className="space-y-6 py-6">
+                            <div className="space-y-3">
+                                <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest opacity-70">Legacy Name</Label>
                                 <Input
                                     id="name"
-                                    placeholder="My Company"
+                                    placeholder="e.g., Deep Research Lab"
                                     value={newOrg.name}
+                                    className="h-12 rounded-xl bg-black/5 dark:bg-background/50 border-black/5 dark:border-white/5 shadow-inner"
                                     onChange={(e) => {
                                         setNewOrg({
                                             ...newOrg,
@@ -152,84 +151,69 @@ export default function OrganizationPage() {
                                     }}
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="slug">URL Slug</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="slug" className="text-xs font-black uppercase tracking-widest opacity-70">Network Identifier (Slug)</Label>
                                 <Input
                                     id="slug"
-                                    placeholder="my-company"
+                                    placeholder="deep-research-lab"
                                     value={newOrg.slug}
+                                    className="h-12 rounded-xl bg-black/5 dark:bg-background/50 border-black/5 dark:border-white/5 shadow-inner font-mono"
                                     onChange={(e) =>
                                         setNewOrg({ ...newOrg, slug: e.target.value })
                                     }
                                 />
-                                <p className="text-xs text-slate-500">
-                                    This will be used in URLs: /org/{newOrg.slug || "slug"}
+                                <p className="text-[10px] font-bold text-primary/50 uppercase tracking-tighter">
+                                    Static Route: /org/{newOrg.slug || "identifier"}
                                 </p>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="type">Type</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="type" className="text-xs font-black uppercase tracking-widest opacity-70">Operational Type</Label>
                                 <Select
                                     value={newOrg.type}
                                     onValueChange={(value: any) =>
                                         setNewOrg({ ...newOrg, type: value })
                                     }
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-black/5 dark:bg-background/50 border-black/5 dark:border-white/5 shadow-inner">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="company">
-                                            <div className="flex items-center gap-2">
-                                                <Building2 className="h-4 w-4" />
-                                                Company
+                                    <SelectContent className="glass border-black/5 dark:border-white/10 rounded-xl">
+                                        <SelectItem value="company" className="rounded-lg focus:bg-primary/10">
+                                            <div className="flex items-center gap-3">
+                                                <Building2 className="h-4 w-4 text-primary" />
+                                                Enterprise Corporation
                                             </div>
                                         </SelectItem>
-                                        <SelectItem value="school">
-                                            <div className="flex items-center gap-2">
-                                                <GraduationCap className="h-4 w-4" />
-                                                School
+                                        <SelectItem value="school" className="rounded-lg focus:bg-primary/10">
+                                            <div className="flex items-center gap-3">
+                                                <GraduationCap className="h-4 w-4 text-primary" />
+                                                Academic Institution
                                             </div>
                                         </SelectItem>
-                                        <SelectItem value="team">
-                                            <div className="flex items-center gap-2">
-                                                <Users className="h-4 w-4" />
-                                                Team
-                                            </div>
-                                        </SelectItem>
-                                        <SelectItem value="personal">
-                                            <div className="flex items-center gap-2">
-                                                <User className="h-4 w-4" />
-                                                Personal
+                                        <SelectItem value="team" className="rounded-lg focus:bg-primary/10">
+                                            <div className="flex items-center gap-3">
+                                                <Users className="h-4 w-4 text-primary" />
+                                                Collaborative Team
                                             </div>
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description (optional)</Label>
-                                <Input
-                                    id="description"
-                                    placeholder="A brief description..."
-                                    value={newOrg.description}
-                                    onChange={(e) =>
-                                        setNewOrg({ ...newOrg, description: e.target.value })
-                                    }
-                                />
-                            </div>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="gap-3">
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 onClick={() => setCreateDialogOpen(false)}
+                                className="rounded-xl font-bold"
                             >
-                                Cancel
+                                Abort
                             </Button>
                             <Button
                                 onClick={handleCreateOrg}
-                                disabled={createMutation.isLoading}
-                                className="gradient-primary border-0"
+                                disabled={createMutation.isPending}
+                                className="bg-ai-gradient border-none rounded-xl h-12 px-8 font-bold shadow-ai"
                             >
-                                {createMutation.isLoading ? "Creating..." : "Create"}
+                                {createMutation.isPending ? "Connecting..." : "Initialize"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -238,64 +222,74 @@ export default function OrganizationPage() {
 
             {/* Organizations Grid */}
             {isLoading ? (
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="flex items-center justify-center h-80">
+                    <div className="relative">
+                        <div className="w-16 h-16 rounded-3xl border-2 border-primary border-t-transparent animate-spin" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        </div>
+                    </div>
                 </div>
             ) : organizations?.length === 0 ? (
-                <Card className="border-0 shadow-sm">
-                    <CardContent className="p-12 text-center">
-                        <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
-                            <Building2 className="h-10 w-10 text-slate-400" />
+                <Card className="glass border-none shadow-2xl rounded-[3rem]">
+                    <CardContent className="p-24 text-center space-y-8">
+                        <div className="w-32 h-32 rounded-[2.5rem] bg-accent/50 flex items-center justify-center mx-auto shadow-inner relative group">
+                            <div className="absolute inset-0 bg-primary/10 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Building2 className="h-16 w-16 text-muted-foreground/30 relative z-10" />
                         </div>
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
-                            No organizations yet
-                        </h3>
-                        <p className="text-slate-500 dark:text-slate-400 mb-6">
-                            Create your first organization to start collaborating with your team
-                        </p>
+                        <div className="space-y-4 max-w-md mx-auto">
+                            <h3 className="text-3xl font-bold">No Active Networks</h3>
+                            <p className="text-muted-foreground text-lg font-medium opacity-80">
+                                You are currently operating as a lone intelligence. Create an organization to expand your reach.
+                            </p>
+                        </div>
                         <Button
                             onClick={() => setCreateDialogOpen(true)}
-                            className="gradient-primary border-0"
+                            className="bg-ai-gradient shadow-ai border-none rounded-2xl h-14 px-10 font-bold hover:scale-105 active:scale-95 transition-all"
                         >
-                            <Plus className="h-4 w-4 mr-2" />
+                            <Plus className="h-5 w-5 mr-3" />
                             Create Organization
                         </Button>
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {organizations?.map((org) => (
                         <Link key={org.id} href={`/dashboard/organization/${org.id}`}>
-                            <Card className="border-0 shadow-sm card-hover cursor-pointer h-full">
-                                <CardContent className="p-6">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                            {orgTypeIcons[org.type] || <Building2 className="h-6 w-6 text-blue-600" />}
+                            <Card className="glass border-none shadow-xl card-hover cursor-pointer h-full rounded-[2rem] group">
+                                <CardContent className="p-8">
+                                    <div className="flex items-start justify-between mb-8">
+                                        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner">
+                                            {orgTypeIcons[org.type] || <Building2 className="h-8 w-8 text-primary" />}
                                         </div>
-                                        <span
-                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                                                roleBadgeColors[org.role] || roleBadgeColors.member
-                                            }`}
+                                        <div
+                                            className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${roleBadgeColors[org.role] || roleBadgeColors.member
+                                                }`}
                                         >
                                             {roleIcons[org.role]}
                                             {org.role}
-                                        </span>
+                                        </div>
                                     </div>
 
-                                    <h3 className="font-semibold text-slate-800 dark:text-white mb-1">
-                                        {org.name}
-                                    </h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                                        /{org.slug}
-                                    </p>
+                                    <div className="space-y-2 mb-8">
+                                        <h3 className="text-2xl font-bold truncate group-hover:text-primary transition-colors">
+                                            {org.name}
+                                        </h3>
+                                        <p className="text-sm font-mono text-muted-foreground/60">
+                                            org_id://{org.slug}
+                                        </p>
+                                    </div>
 
-                                    <div className="flex items-center justify-between text-xs text-slate-400">
-                                        <span className="capitalize">{org.type}</span>
+                                    <div className="pt-6 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Nexus Type</span>
+                                            <span className="text-xs font-bold capitalize">{org.type}</span>
+                                        </div>
                                         {org.joinedAt && (
-                                            <span>
-                                                Joined{" "}
-                                                {new Date(org.joinedAt).toLocaleDateString()}
-                                            </span>
+                                            <div className="flex flex-col items-end text-right">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Joined On</span>
+                                                <span className="text-xs font-bold">{new Date(org.joinedAt).toLocaleDateString()}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </CardContent>
@@ -305,34 +299,39 @@ export default function OrganizationPage() {
                 </div>
             )}
 
-            {/* Role Legend */}
-            <Card className="border-0 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-lg">Role Permissions</CardTitle>
-                    <CardDescription>
-                        Understanding what each role can do
+            {/* Role Legend - Professional Reference */}
+            <Card className="glass border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+                <CardHeader className="p-10 pb-2 border-b border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <Shield className="h-4 w-4 text-primary" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold">Neural Permission Mapping</CardTitle>
+                    </div>
+                    <CardDescription className="text-base font-medium opacity-60">
+                        Understanding the hierarchical access levels within organizations.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <CardContent className="p-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[
-                            { role: "owner", desc: "Full control, can delete organization" },
-                            { role: "admin", desc: "Manage members, all CRUD operations" },
-                            { role: "editor", desc: "Create, read, update, delete documents" },
-                            { role: "member", desc: "Create and read documents" },
-                            { role: "viewer", desc: "Read-only access" },
-                            { role: "guest", desc: "Limited read access" },
+                            { role: "owner", desc: "Absolute master control. Capable of total network termination." },
+                            { role: "admin", desc: "High-level orchestration. Full CRUD operations over all assets." },
+                            { role: "editor", desc: "Knowledge creation. Authorized to modify or ingest new assets." },
+                            { role: "member", desc: "Standard intelligence. Can ingest and query documents." },
+                            { role: "viewer", desc: "Passive synchronization. Read-only access to neural maps." },
+                            { role: "guest", desc: "Restricted sandbox. Minimal read access for external nodes." },
                         ].map(({ role, desc }) => (
                             <div
                                 key={role}
-                                className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50"
+                                className="flex items-start gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors group"
                             >
-                                <div className="mt-0.5">{roleIcons[role]}</div>
-                                <div>
-                                    <p className="font-medium text-slate-800 dark:text-white capitalize">
+                                <div className="mt-1 transition-transform group-hover:scale-125">{roleIcons[role]}</div>
+                                <div className="space-y-1">
+                                    <p className="font-bold text-foreground/90 capitalize tracking-tight group-hover:text-primary transition-colors">
                                         {role}
                                     </p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    <p className="text-xs text-muted-foreground font-medium leading-relaxed opacity-60">
                                         {desc}
                                     </p>
                                 </div>

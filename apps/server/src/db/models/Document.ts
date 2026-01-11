@@ -160,14 +160,11 @@ const DocumentSchema = new Schema<IDocument>(
     }
 );
 
-// Indexes
+// Compound and additional indexes (single-field indexes defined inline with index: true)
 DocumentSchema.index({ userId: 1, createdAt: -1 });
 DocumentSchema.index({ organizationId: 1, createdAt: -1 });
 DocumentSchema.index({ processingStatus: 1 });
 DocumentSchema.index({ visibility: 1 });
-DocumentSchema.index({ "sharedWithUsers.userId": 1 });
-DocumentSchema.index({ "sharedWithOrganizations.organizationId": 1 });
 DocumentSchema.index({ "publicShare.enabled": 1 });
-DocumentSchema.index({ sharedWith: 1 }); // Backward compatibility
 
 export const Document = mongoose.model<IDocument>("Document", DocumentSchema);

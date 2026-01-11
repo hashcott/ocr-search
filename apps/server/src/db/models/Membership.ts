@@ -105,6 +105,12 @@ export const ROLE_HIERARCHY: Record<MemberRole, number> = {
 };
 
 // Default permissions per role
+// - owner: full permissions
+// - admin: manage members, full document management
+// - editor: create and edit documents, view files
+// - member: create and view files
+// - viewer: only view files
+// - guest: can only view files that are explicitly shared with them (no default org access)
 export const DEFAULT_ROLE_PERMISSIONS: Record<
   MemberRole,
   { resource: ResourceType; actions: PermissionAction[] }[]
@@ -114,13 +120,13 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<
     { resource: 'organization', actions: ['read', 'update'] },
     { resource: 'document', actions: ['manage'] },
     { resource: 'chat', actions: ['manage'] },
-    { resource: 'member', actions: ['create', 'read', 'update', 'delete', 'invite'] },
+    { resource: 'member', actions: ['manage', 'invite'] },
     { resource: 'settings', actions: ['read', 'update'] },
   ],
   editor: [
     { resource: 'organization', actions: ['read'] },
-    { resource: 'document', actions: ['create', 'read', 'update', 'delete'] },
-    { resource: 'chat', actions: ['create', 'read', 'update', 'delete'] },
+    { resource: 'document', actions: ['create', 'read', 'update'] },
+    { resource: 'chat', actions: ['create', 'read', 'update'] },
     { resource: 'member', actions: ['read'] },
   ],
   member: [
@@ -135,5 +141,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<
     { resource: 'chat', actions: ['read'] },
     { resource: 'member', actions: ['read'] },
   ],
-  guest: [{ resource: 'document', actions: ['read'] }],
+  // Guest has NO default document permissions - they can only view files explicitly shared with them
+  guest: [],
 };

@@ -2,7 +2,14 @@ import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { Organization } from '../db/models/Organization';
-import { Membership, ROLE_HIERARCHY } from '../db/models/Membership';
+import {
+  Membership,
+  ROLE_HIERARCHY,
+  DEFAULT_ROLE_PERMISSIONS,
+  MemberRole,
+  PermissionAction,
+  ResourceType,
+} from '../db/models/Membership';
 import { User } from '../db/models/User';
 import { getUserAbility, authorize } from '../services/permissions';
 import { createNotification } from './notification';
@@ -498,10 +505,34 @@ export const organizationRouter = router({
   getMyPermissions: protectedProcedure
     .input(z.object({ organizationId: z.string() }))
     .query(async ({ input, ctx }) => {
-      const ability = await getUserAbility(ctx.userId!);
+      // Get user's membership for this organization
+      const membership = await Membership.findOne({
+        userId: ctx.userId,
+        organizationId: input.organizationId,
+        status: 'active',
+      }).lean();
 
-      const resources = ['Organization', 'Document', 'Chat', 'Member', 'Settings'] as const;
-      const actions = [
+      if (!membership) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Not a member of this organization',
+        });
+      }
+
+      const role = membership.role as MemberRole;
+      const customPermissions = membership.customPermissions;
+
+      // Map resource types to display names
+      const resourceToDisplay: Record<ResourceType, string> = {
+        all: 'All',
+        organization: 'Organization',
+        document: 'Document',
+        chat: 'Chat',
+        member: 'Member',
+        settings: 'Settings',
+      };
+
+      const allActions: PermissionAction[] = [
         'manage',
         'create',
         'read',
@@ -510,24 +541,72 @@ export const organizationRouter = router({
         'share',
         'export',
         'invite',
-      ] as const;
+      ];
 
-      const permissions: Record<string, string[]> = {};
+      // Initialize permissions for each resource
+      const permissions: Record<string, string[]> = {
+        Organization: [],
+        Document: [],
+        Chat: [],
+        Member: [],
+        Settings: [],
+      };
 
-      for (const resource of resources) {
-        const allowed: string[] = [];
-        const orgId = String(input.organizationId);
-        const subject = {
-          __typename: resource,
-          organizationId: orgId,
-        };
-        for (const action of actions) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if (ability.can(action, subject as any)) {
-            allowed.push(action);
+      // Get role-based permissions
+      const rolePermissions = DEFAULT_ROLE_PERMISSIONS[role] || [];
+
+      // Apply role-based permissions
+      for (const perm of rolePermissions) {
+        const displayName = resourceToDisplay[perm.resource];
+
+        if (perm.resource === 'all') {
+          // 'all' resource applies to everything
+          const actionsToAdd = perm.actions.includes('manage')
+            ? [...allActions]
+            : [...perm.actions];
+
+          for (const resourceKey of Object.keys(permissions)) {
+            permissions[resourceKey] = Array.from(
+              new Set([...permissions[resourceKey], ...actionsToAdd])
+            );
+          }
+        } else if (displayName && displayName in permissions) {
+          // Specific resource
+          const actionsToAdd = perm.actions.includes('manage')
+            ? [...allActions]
+            : [...perm.actions];
+
+          permissions[displayName] = Array.from(
+            new Set([...permissions[displayName], ...actionsToAdd])
+          );
+        }
+      }
+
+      // Apply custom permissions (overrides/additions)
+      if (customPermissions && customPermissions.length > 0) {
+        for (const perm of customPermissions) {
+          const displayName = resourceToDisplay[perm.resource as ResourceType];
+
+          if (perm.resource === 'all') {
+            const actionsToAdd = perm.actions.includes('manage')
+              ? [...allActions]
+              : [...(perm.actions as PermissionAction[])];
+
+            for (const resourceKey of Object.keys(permissions)) {
+              permissions[resourceKey] = Array.from(
+                new Set([...permissions[resourceKey], ...actionsToAdd])
+              );
+            }
+          } else if (displayName && displayName in permissions) {
+            const actionsToAdd = perm.actions.includes('manage')
+              ? [...allActions]
+              : [...(perm.actions as PermissionAction[])];
+
+            permissions[displayName] = Array.from(
+              new Set([...permissions[displayName], ...actionsToAdd])
+            );
           }
         }
-        permissions[resource] = allowed;
       }
 
       return permissions;

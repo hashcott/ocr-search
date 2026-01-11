@@ -36,6 +36,21 @@ const resourceToSubject: Record<ResourceType, Subjects> = {
   settings: 'Settings',
 };
 
+// All concrete subjects (not including 'all')
+const CONCRETE_SUBJECTS: Subjects[] = ['Organization', 'Document', 'Chat', 'Member', 'Settings'];
+
+// All possible actions
+const ALL_ACTIONS: Actions[] = [
+  'manage',
+  'create',
+  'read',
+  'update',
+  'delete',
+  'share',
+  'export',
+  'invite',
+];
+
 /**
  * Build ability (permissions) for a user based on their memberships
  */
@@ -54,8 +69,22 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
       const subjectType = resourceToSubject[permission.resource];
 
       for (const action of permission.actions) {
-        if (action === 'manage') {
-          // "manage" grants all actions on the resource
+        if (subjectType === 'all') {
+          // 'all' resource means permission applies to all concrete subjects
+          if (action === 'manage') {
+            // 'manage' on 'all' = full control of everything
+            for (const concreteSubject of CONCRETE_SUBJECTS) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              can('manage', concreteSubject, { organizationId } as any);
+            }
+          } else {
+            for (const concreteSubject of CONCRETE_SUBJECTS) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              can(action, concreteSubject, { organizationId } as any);
+            }
+          }
+        } else if (action === 'manage') {
+          // "manage" grants all actions on the specific resource
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           can('manage', subjectType, { organizationId } as any);
         } else {
@@ -71,8 +100,16 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
         const subjectType = resourceToSubject[permission.resource];
 
         for (const action of permission.actions) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          can(action, subjectType, { organizationId } as any);
+          if (subjectType === 'all') {
+            // Custom 'all' permission applies to all concrete subjects
+            for (const concreteSubject of CONCRETE_SUBJECTS) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              can(action, concreteSubject, { organizationId } as any);
+            }
+          } else {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            can(action, subjectType, { organizationId } as any);
+          }
         }
       }
     }
@@ -104,44 +141,62 @@ export function checkPermission(
 }
 
 /**
- * Get all permissions for a user in a specific organization
+ * Get all permissions for a user in a specific organization based on role
  */
 export function getOrganizationPermissions(
-  ability: AppAbility,
-  organizationId: string
+  role: MemberRole,
+  customPermissions?: IMembership['customPermissions']
 ): Record<Subjects, Actions[]> {
-  const subjects: Subjects[] = ['Organization', 'Document', 'Chat', 'Member', 'Settings'];
-  const actions: Actions[] = [
-    'manage',
-    'create',
-    'read',
-    'update',
-    'delete',
-    'share',
-    'export',
-    'invite',
-  ];
+  const permissions: Record<string, Actions[]> = {
+    Organization: [],
+    Document: [],
+    Chat: [],
+    Member: [],
+    Settings: [],
+  };
 
-  const permissions: Record<string, Actions[]> = {};
+  // Get role-based permissions
+  const rolePermissions = DEFAULT_ROLE_PERMISSIONS[role] || [];
 
-  for (const subjectName of subjects) {
-    const allowedActions: Actions[] = [];
+  // Apply role-based permissions
+  for (const perm of rolePermissions) {
+    const subject = resourceToSubject[perm.resource];
 
-    // Create subject object that matches the conditions
-    const orgIdStr = String(organizationId);
-    const subject = {
-      __typename: subjectName,
-      organizationId: orgIdStr,
-    };
+    if (subject === 'all') {
+      // 'all' resource applies to everything
+      const actionsToAdd = perm.actions.includes('manage') ? [...ALL_ACTIONS] : [...perm.actions];
 
-    for (const action of actions) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (ability.can(action, subject as any)) {
-        allowedActions.push(action);
+      for (const resourceKey of Object.keys(permissions)) {
+        permissions[resourceKey] = Array.from(
+          new Set([...permissions[resourceKey], ...actionsToAdd])
+        );
+      }
+    } else if (subject in permissions) {
+      const actionsToAdd = perm.actions.includes('manage') ? [...ALL_ACTIONS] : [...perm.actions];
+
+      permissions[subject] = Array.from(new Set([...permissions[subject], ...actionsToAdd]));
+    }
+  }
+
+  // Apply custom permissions
+  if (customPermissions && customPermissions.length > 0) {
+    for (const perm of customPermissions) {
+      const subject = resourceToSubject[perm.resource];
+
+      if (subject === 'all') {
+        const actionsToAdd = perm.actions.includes('manage') ? [...ALL_ACTIONS] : [...perm.actions];
+
+        for (const resourceKey of Object.keys(permissions)) {
+          permissions[resourceKey] = Array.from(
+            new Set([...permissions[resourceKey], ...actionsToAdd])
+          );
+        }
+      } else if (subject in permissions) {
+        const actionsToAdd = perm.actions.includes('manage') ? [...ALL_ACTIONS] : [...perm.actions];
+
+        permissions[subject] = Array.from(new Set([...permissions[subject], ...actionsToAdd]));
       }
     }
-
-    permissions[subjectName] = allowedActions;
   }
 
   return permissions as Record<Subjects, Actions[]>;

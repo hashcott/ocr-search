@@ -20,6 +20,7 @@ import {
   Moon,
   Sun,
   Command,
+  Shield,
 } from 'lucide-react';
 import { NotificationDropdown } from '@/components/ui/notification-dropdown';
 import { LogoIcon } from '@/components/ui/logo';
@@ -48,6 +49,7 @@ const navItems: NavItem[] = [
   { name: 'Find Files', href: '/dashboard/files', icon: FolderSearch },
   { name: 'Upload', href: '/dashboard/upload', icon: Upload },
   { name: 'Organization', href: '/dashboard/organization', icon: Building2 },
+  { name: 'Permissions', href: '/dashboard/permissions', icon: Shield },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
@@ -274,6 +276,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link href="/dashboard/settings" className="flex items-center gap-2.5">
                   <Settings className="h-4 w-4" />
                   <span className="font-medium">Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="focus:bg-accent cursor-pointer rounded py-2">
+                <Link href="/dashboard/permissions" className="flex items-center gap-2.5">
+                  <Shield className="h-4 w-4" />
+                  <span className="font-medium">Permissions</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border my-1" />

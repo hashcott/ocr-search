@@ -112,10 +112,12 @@ export const documentRouter = router({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: any = {
       $or: [
-        // Personal documents
+        // Personal documents (owned by user, not in any org)
         { userId: ctx.userId, organizationId: null },
-        // Documents shared with this user
+        // Documents shared with this user (old format)
         { sharedWith: ctx.userId },
+        // Documents shared with this user (new format with permissions)
+        { 'sharedWithUsers.userId': ctx.userId },
       ],
     };
 
@@ -145,7 +147,9 @@ export const documentRouter = router({
       organizationId: doc.organizationId?.toString(),
       visibility: doc.visibility,
       sharedWith: doc.sharedWith || [],
-      isShared: (doc.sharedWith || []).includes(ctx.userId!),
+      isShared:
+        (doc.sharedWith || []).includes(ctx.userId!) ||
+        (doc.sharedWithUsers || []).some((s) => s.userId === ctx.userId),
       createdAt: doc.createdAt,
     }));
   }),
@@ -390,7 +394,11 @@ export const documentRouter = router({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const query: any = {
         _id: { $in: documentIds },
-        $or: [{ userId: ctx.userId, organizationId: null }, { sharedWith: ctx.userId }],
+        $or: [
+          { userId: ctx.userId, organizationId: null },
+          { sharedWith: ctx.userId },
+          { 'sharedWithUsers.userId': ctx.userId },
+        ],
       };
 
       if (orgIds.length > 0) {

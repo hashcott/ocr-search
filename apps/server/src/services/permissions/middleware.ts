@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { Membership, PermissionAction } from '../../db/models/Membership';
+import { Membership, PermissionAction, DEFAULT_ROLE_PERMISSIONS } from '../../db/models/Membership';
 import { defineAbilityFor, AppAbility, AbilityContext } from './ability';
 import { Document, IDocument } from '../../db/models/Document';
 import mongoose from 'mongoose';
@@ -286,22 +286,36 @@ export async function canAccessDocument(
     return false;
   }
 
-  // For organization/public documents, check organization permissions
-  const ability = await getUserAbility(userId);
-
-  // Check if user has the required permission in the organization
-  if (!context.organizationId) {
+  // Guest role has no default org document access - they need explicit shares
+  if (context.membership.role === 'guest') {
     return false;
   }
 
-  // For MongoAbility, create subject object that matches the conditions
-  const orgId = String(context.organizationId);
-  const subject = {
-    __typename: 'Document' as const,
-    organizationId: orgId,
-  };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ability.can(action, subject as any);
+  // Check role-based permissions directly
+  const role = context.membership.role as keyof typeof DEFAULT_ROLE_PERMISSIONS;
+  const rolePermissions = DEFAULT_ROLE_PERMISSIONS[role] || [];
+
+  // Check if role has the required action for documents
+  for (const perm of rolePermissions) {
+    if (perm.resource === 'all' || perm.resource === 'document') {
+      if (perm.actions.includes('manage') || perm.actions.includes(action)) {
+        return true;
+      }
+    }
+  }
+
+  // Also check custom permissions
+  if (context.membership.customPermissions) {
+    for (const perm of context.membership.customPermissions) {
+      if (perm.resource === 'all' || perm.resource === 'document') {
+        if (perm.actions.includes('manage') || perm.actions.includes(action)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -312,9 +326,17 @@ export async function filterDocumentsByPermission(
   documents: IDocument[],
   action: PermissionAction = 'read'
 ): Promise<IDocument[]> {
-  const ability = await getUserAbility(userId);
   const userOrgs = await getUserOrganizations(userId);
   const userOrgIds = new Set(userOrgs);
+
+  // Get user's memberships with roles for direct role checking
+  const memberships = await Membership.find({
+    userId,
+    status: 'active',
+  }).lean();
+
+  // Create a map of orgId -> membership for quick lookup
+  const membershipMap = new Map(memberships.map((m) => [m.organizationId.toString(), m]));
 
   const accessible: IDocument[] = [];
 
@@ -368,20 +390,49 @@ export async function filterDocumentsByPermission(
       continue;
     }
 
-    // Check visibility
+    // Check visibility - private documents only accessible by owner
     if (doc.visibility === 'private') {
-      // Private: only owner (already checked)
       continue;
     }
 
-    // Check permission for organization/public documents
-    const orgIdStr = String(orgId);
-    const subject = {
-      __typename: 'Document' as const,
-      organizationId: orgIdStr,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (ability.can(action, subject as any)) {
+    // Get user's membership for this organization
+    const membership = membershipMap.get(orgId);
+    if (!membership) {
+      continue;
+    }
+
+    // Guest role has no default org document access - they need explicit shares
+    if (membership.role === 'guest') {
+      continue;
+    }
+
+    // Check role-based permissions directly
+    const rolePermissions = DEFAULT_ROLE_PERMISSIONS[membership.role] || [];
+
+    // Check if role has the required action for documents
+    let roleHasPermission = false;
+    for (const perm of rolePermissions) {
+      if (perm.resource === 'all' || perm.resource === 'document') {
+        if (perm.actions.includes('manage') || perm.actions.includes(action)) {
+          roleHasPermission = true;
+          break;
+        }
+      }
+    }
+
+    // Also check custom permissions
+    if (!roleHasPermission && membership.customPermissions) {
+      for (const perm of membership.customPermissions) {
+        if (perm.resource === 'all' || perm.resource === 'document') {
+          if (perm.actions.includes('manage') || perm.actions.includes(action)) {
+            roleHasPermission = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (roleHasPermission) {
       accessible.push(doc);
     }
   }

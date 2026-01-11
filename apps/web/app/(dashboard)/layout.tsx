@@ -66,12 +66,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { data: user } = trpc.auth.me.useQuery();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
+  const { data: initData, isLoading: initLoading } = trpc.config.isInitialized.useQuery();
 
+  // Check initialization first
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!initLoading && !initData?.isInitialized) {
+      router.push('/setup');
+    }
+  }, [initData, initLoading, router]);
+
+  // Then check authentication
+  useEffect(() => {
+    if (!initLoading && initData?.isInitialized && !isAuthenticated) {
       router.push('/login');
     }
-  }, [router, isAuthenticated]);
+  }, [initData, initLoading, isAuthenticated, router]);
 
   // Keyboard shortcut: Ctrl+K / Cmd+K to focus search
   const handleKeyDown = useCallback((e: KeyboardEvent) => {

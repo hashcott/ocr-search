@@ -66,8 +66,16 @@ const SetCustomPermissionsSchema = z.object({
 });
 
 export const organizationRouter = router({
-  // Create a new organization
+  // Create a new organization (admin only)
   create: protectedProcedure.input(CreateOrganizationSchema).mutation(async ({ input, ctx }) => {
+    // Only admin can create organizations
+    if (ctx.userRole !== 'admin') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Only admin users can create organizations',
+      });
+    }
+
     // Check if slug is available
     const existing = await Organization.findOne({ slug: input.slug });
     if (existing) {

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc/client';
+import { useAuthStore } from '@/lib/stores';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,12 +16,45 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 
 export default function SetupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const { data: initData, isLoading: initLoading } = trpc.config.isInitialized.useQuery();
+
+  // Redirect if already initialized
+  useEffect(() => {
+    if (!initLoading && initData?.isInitialized) {
+      router.push('/dashboard');
+    }
+  }, [initData, initLoading, router]);
+
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Show loading state while checking initialization
+  if (initLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render setup if already initialized (will redirect)
+  if (initData?.isInitialized) {
+    return null;
+  }
+  const [showPassword, setShowPassword] = useState(false);
+  const [adminData, setAdminData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
   const [config, setConfig] = useState({
     database: { url: 'mongodb://localhost:27017/fileai' },
     storage: {
@@ -50,12 +84,23 @@ export default function SetupPage() {
   });
 
   const saveMutation = trpc.config.save.useMutation({
-    onSuccess: () => {
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const setupAdminMutation = trpc.auth.setupAdmin.useMutation({
+    onSuccess: (data) => {
+      setAuth(data.user, data.token);
       toast({
         title: 'Success',
-        description: 'Configuration saved successfully',
+        description: 'Admin account created successfully',
       });
-      router.push('/register');
+      router.push('/dashboard');
     },
     onError: (error) => {
       toast({
@@ -66,8 +111,31 @@ export default function SetupPage() {
     },
   });
 
-  const handleFinish = () => {
-    saveMutation.mutate(config as Parameters<typeof saveMutation.mutate>[0]);
+  const handleFinish = async () => {
+    // If on config step (step 4), save config and move to admin creation
+    if (currentStep === 4) {
+      try {
+        await saveMutation.mutateAsync(config as Parameters<typeof saveMutation.mutate>[0]);
+        setCurrentStep(5); // Move to admin creation step
+      } catch (error) {
+        // Error already handled in mutation
+      }
+    } else if (currentStep === 5) {
+      // Create admin user
+      if (!adminData.email || !adminData.password) {
+        toast({
+          title: 'Error',
+          description: 'Please fill in all required fields',
+          variant: 'destructive',
+        });
+        return;
+      }
+      setupAdminMutation.mutate({
+        email: adminData.email,
+        password: adminData.password,
+        name: adminData.name || undefined,
+      });
+    }
   };
 
   const steps = [
@@ -90,6 +158,10 @@ export default function SetupPage() {
     {
       title: 'Embeddings',
       description: 'Choose embedding model',
+    },
+    {
+      title: 'Admin Account',
+      description: 'Create your admin account',
     },
   ];
 
@@ -387,6 +459,83 @@ export default function SetupPage() {
                 )}
               </div>
             )}
+
+            {/* Step 5: Admin Account */}
+            {currentStep === 5 && (
+              <div className="space-y-4">
+                <div className="mb-4 rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+                  <p className="font-medium">Create your admin account</p>
+                  <p className="mt-1 text-blue-600">
+                    This will be the first user with administrator privileges. You can create
+                    organizations and manage the system.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="adminName">Full Name (Optional)</Label>
+                  <div className="relative">
+                    <User className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
+                    <Input
+                      id="adminName"
+                      type="text"
+                      placeholder="John Doe"
+                      value={adminData.name}
+                      onChange={(e) =>
+                        setAdminData({ ...adminData, name: e.target.value })
+                      }
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="adminEmail">Email *</Label>
+                  <div className="relative">
+                    <Mail className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
+                    <Input
+                      id="adminEmail"
+                      type="email"
+                      placeholder="admin@example.com"
+                      value={adminData.email}
+                      onChange={(e) =>
+                        setAdminData({ ...adminData, email: e.target.value })
+                      }
+                      required
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="adminPassword">Password *</Label>
+                  <div className="relative">
+                    <Lock className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
+                    <Input
+                      id="adminPassword"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={adminData.password}
+                      onChange={(e) =>
+                        setAdminData({ ...adminData, password: e.target.value })
+                      }
+                      required
+                      minLength={8}
+                      className="pl-10 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Password must be at least 8 characters
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -399,8 +548,19 @@ export default function SetupPage() {
             Previous
           </Button>
           {currentStep === steps.length - 1 ? (
+            <Button
+              onClick={handleFinish}
+              disabled={setupAdminMutation.isLoading || saveMutation.isLoading}
+            >
+              {setupAdminMutation.isLoading
+                ? 'Creating Admin...'
+                : saveMutation.isLoading
+                  ? 'Saving...'
+                  : 'Create Admin Account'}
+            </Button>
+          ) : currentStep === steps.length - 2 ? (
             <Button onClick={handleFinish} disabled={saveMutation.isLoading}>
-              {saveMutation.isLoading ? 'Saving...' : 'Finish Setup'}
+              {saveMutation.isLoading ? 'Saving...' : 'Save & Continue'}
             </Button>
           ) : (
             <Button onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}>

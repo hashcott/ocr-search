@@ -3,8 +3,17 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { SystemConfigSchema } from '@fileai/shared';
 import { SystemConfig } from '../db/models/SystemConfig';
+import { User } from '../db/models/User';
 
 export const configRouter = router({
+  // Check if application is initialized (has at least one user)
+  isInitialized: publicProcedure.query(async () => {
+    const userCount = await User.countDocuments();
+    return {
+      isInitialized: userCount > 0,
+    };
+  }),
+
   get: publicProcedure.query(async () => {
     const config = await SystemConfig.findOne();
 
@@ -32,7 +41,7 @@ export const configRouter = router({
     };
   }),
 
-  save: adminProcedure
+  save: publicProcedure
     .input(
       SystemConfigSchema.omit({
         id: true,
@@ -40,7 +49,21 @@ export const configRouter = router({
         updatedAt: true,
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // Check if app is already initialized
+      const userCount = await User.countDocuments();
+      const isInitialized = userCount > 0;
+
+      // If initialized, require admin role
+      if (isInitialized) {
+        if (!ctx.userId || ctx.userRole !== 'admin') {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Only admin can update configuration after initial setup',
+          });
+        }
+      }
+
       try {
         // Update or create config
         const config = await SystemConfig.findOneAndUpdate(

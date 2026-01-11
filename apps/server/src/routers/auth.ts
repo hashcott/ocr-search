@@ -7,8 +7,76 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/jwt';
 import { z } from 'zod';
 
+const SetupAdminSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  name: z.string().optional(),
+});
+
 export const authRouter = router({
-  register: publicProcedure.input(CreateUserSchema).mutation(async ({ input }) => {
+  // Create the first admin user during setup
+  setupAdmin: publicProcedure.input(SetupAdminSchema).mutation(async ({ input }) => {
+    // Check if any user already exists
+    const userCount = await User.countDocuments();
+    if (userCount > 0) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Admin user already exists. Use registration or login instead.',
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: input.email });
+    if (existingUser) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'User already exists',
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(input.password, 10);
+
+    // Create admin user
+    const user = await User.create({
+      email: input.email,
+      password: hashedPassword,
+      name: input.name,
+      role: 'admin', // Always set as admin for first user
+    });
+
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id.toString(), role: user.role }, JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    return {
+      token,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
+  }),
+
+  register: publicProcedure.input(CreateUserSchema).mutation(async ({ input, ctx }) => {
+    // Check if app is already initialized (has at least one user)
+    const userCount = await User.countDocuments();
+    const isInitialized = userCount > 0;
+
+    // After initialization, only admin can create new users
+    if (isInitialized) {
+      if (!ctx.userId || ctx.userRole !== 'admin') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message:
+            'Registration is disabled. Please contact an administrator to create an account.',
+        });
+      }
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email: input.email });
     if (existingUser) {
@@ -22,6 +90,8 @@ export const authRouter = router({
     const hashedPassword = await bcrypt.hash(input.password, 10);
 
     // Create user
+    // During initial setup, first user should use setupAdmin endpoint
+    // After setup, only admin can create users, and they should be regular users by default
     const user = await User.create({
       email: input.email,
       password: hashedPassword,

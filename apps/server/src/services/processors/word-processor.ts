@@ -5,6 +5,8 @@ export class WordProcessor implements FileProcessor {
   supportedTypes = [
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
     'application/msword', // .doc
+    'application/wps-office.docx', // WPS Office .docx
+    'application/wps-office.doc', // WPS Office .doc
   ];
 
   async process(file: Buffer, _filename: string): Promise<ProcessedDocument> {

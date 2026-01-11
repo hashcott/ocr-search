@@ -108,6 +108,27 @@ export default function DocumentsPage() {
     },
   });
 
+  const reindexMutation = trpc.document.reindex.useMutation({
+    onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Document reindexing started',
+      });
+      refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleReindex = (id: string) => {
+    reindexMutation.mutate({ id });
+  };
+
   const filteredDocuments = useMemo(() => {
     if (!documents) return [];
 
@@ -128,6 +149,8 @@ export default function DocumentsPage() {
         word: [
           'application/msword',
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/wps-office.docx',
+          'application/wps-office.doc',
         ],
         xml: ['application/xml', 'text/xml'],
         text: ['text/plain'],
@@ -241,13 +264,18 @@ export default function DocumentsPage() {
 
   const getFileType = (mimeType: string) => {
     if (mimeType.includes('pdf')) return 'PDF';
-    if (mimeType.includes('word') || mimeType.includes('document')) return 'DOC';
+    if (
+      mimeType.includes('word') ||
+      mimeType.includes('document') ||
+      mimeType.includes('wps-office.doc')
+    )
+      return 'DOC';
     if (mimeType.includes('xml')) return 'XML';
     if (mimeType.includes('text')) return 'TXT';
     return 'FILE';
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, errorMessage?: string) => {
     switch (status) {
       case 'completed':
         return (
@@ -265,7 +293,10 @@ export default function DocumentsPage() {
         );
       case 'failed':
         return (
-          <span className="bg-destructive/10 text-destructive inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium">
+          <span
+            className="bg-destructive/10 text-destructive inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium cursor-help"
+            title={errorMessage || 'Processing failed'}
+          >
             <AlertCircle className="h-3 w-3" />
             Failed
           </span>
@@ -580,7 +611,7 @@ export default function DocumentsPage() {
                     <td className="text-muted-foreground hidden px-4 py-3 text-sm md:table-cell">
                       {formatBytes(doc.size)}
                     </td>
-                    <td className="px-4 py-3">{getStatusBadge(doc.processingStatus)}</td>
+                    <td className="px-4 py-3">{getStatusBadge(doc.processingStatus, doc.processingError)}</td>
                     <td className="text-muted-foreground hidden px-4 py-3 text-sm lg:table-cell">
                       {formatDate(doc.createdAt)}
                     </td>
@@ -628,6 +659,16 @@ export default function DocumentsPage() {
                                               <Download className="mr-2 h-4 w-4" />
                                               Download
                                             </DropdownMenuItem>
+                                            {(doc.processingStatus === 'failed' || doc.processingStatus === 'completed') && (
+                                              <DropdownMenuItem
+                                                onClick={() => handleReindex(doc.id)}
+                                                className="text-primary focus:text-primary rounded"
+                                                disabled={reindexMutation.isPending}
+                                              >
+                                                <RefreshCw className={`mr-2 h-4 w-4 ${reindexMutation.isPending ? 'animate-spin' : ''}`} />
+                                                Reindex
+                                              </DropdownMenuItem>
+                                            )}
                                             <DropdownMenuSeparator className="bg-border" />
                                             <DropdownMenuItem
                                               onClick={() => handleDelete(doc.id)}
@@ -688,6 +729,19 @@ export default function DocumentsPage() {
                                         <Download className="mr-2 h-4 w-4" />
                                         Download
                                       </DropdownMenuItem>
+                                      {(doc.processingStatus === 'failed' || doc.processingStatus === 'completed') && (
+                                        <DropdownMenuItem
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleReindex(doc.id);
+                                          }}
+                                          className="text-primary focus:text-primary rounded"
+                                          disabled={reindexMutation.isPending}
+                                        >
+                                          <RefreshCw className={`mr-2 h-4 w-4 ${reindexMutation.isPending ? 'animate-spin' : ''}`} />
+                                          Reindex
+                                        </DropdownMenuItem>
+                                      )}
                                       <DropdownMenuSeparator className="bg-border" />
                                       <DropdownMenuItem
                                         onClick={(e) => {
@@ -707,7 +761,7 @@ export default function DocumentsPage() {
                 <p className="text-muted-foreground mb-3 text-xs">{formatBytes(doc.size)}</p>
 
                 <div className="flex items-center justify-between">
-                  {getStatusBadge(doc.processingStatus)}
+                  {getStatusBadge(doc.processingStatus, doc.processingError)}
                   <span className="text-muted-foreground text-xs">{formatDate(doc.createdAt)}</span>
                 </div>
               </CardContent>

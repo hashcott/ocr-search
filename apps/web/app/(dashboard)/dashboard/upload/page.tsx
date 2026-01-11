@@ -106,6 +106,8 @@ export default function UploadPage() {
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'application/msword': ['.doc'],
+      'application/wps-office.docx': ['.docx'],
+      'application/wps-office.doc': ['.doc'],
       'application/xml': ['.xml'],
       'text/plain': ['.txt'],
     },

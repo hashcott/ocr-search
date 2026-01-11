@@ -4,7 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { FileUploadSchema, SearchResult } from '@fileai/shared';
 import { Document } from '../db/models/Document';
 import { User } from '../db/models/User';
-import { processDocument } from '../services/document-processor';
+import { processDocument, reindexDocument } from '../services/document-processor';
 import { getStorageAdapter } from '../services/storage';
 import { searchVectorStore, deleteFromVectorDB } from '../services/vector-service';
 import {
@@ -265,6 +265,47 @@ export const documentRouter = router({
       await document.deleteOne();
 
       return { success: true };
+    }),
+
+  reindex: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const document = await Document.findById(input.id);
+
+      if (!document) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Document not found',
+        });
+      }
+
+      // Check update permission (reindex requires update access)
+      const hasAccess = await canAccessDocument(ctx.userId!, input.id, 'update');
+      if (!hasAccess) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: "You don't have permission to reindex this document",
+        });
+      }
+
+      // Only allow reindexing for failed or completed documents
+      if (document.processingStatus === 'processing') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Document is currently being processed',
+        });
+      }
+
+      try {
+        const result = await reindexDocument(input.id, ctx.userId!);
+        return result;
+      } catch (error) {
+        console.error('Reindex error:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to reindex document',
+        });
+      }
     }),
 
   download: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {

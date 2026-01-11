@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,12 @@ import { Search, FileText, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export default function FilesPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const initialQuery = searchParams.get("q") || "";
+  const hasAutoSearchedRef = useRef(false);
+  
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [searchResults, setSearchResults] = useState<Array<{
     content: string;
     score: number;
@@ -31,15 +37,29 @@ export default function FilesPage() {
     },
   });
 
+  // Auto-search when query parameter is present
+  const performSearch = useCallback((query: string) => {
+    if (!query.trim()) return;
+    setIsSearching(true);
+    searchMutation.mutate({
+      query: query,
+      topK: 20,
+    });
+  }, [searchMutation]);
+
+  useEffect(() => {
+    if (initialQuery && !hasAutoSearchedRef.current) {
+      hasAutoSearchedRef.current = true;
+      performSearch(initialQuery);
+      // Clear query param from URL to prevent re-search on refresh
+      router.replace("/dashboard/files", { scroll: false });
+    }
+  }, [initialQuery, performSearch, router]);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-
-    setIsSearching(true);
-    searchMutation.mutate({
-      query: searchQuery,
-      topK: 20,
-    });
+    performSearch(searchQuery);
   };
 
   const exampleQueries = [

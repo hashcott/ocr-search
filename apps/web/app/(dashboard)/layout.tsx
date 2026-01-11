@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuthStore } from "@/lib/stores";
 import {
     Search,
@@ -20,6 +20,7 @@ import {
     Building2,
     Moon,
     Sun,
+    Command,
 } from "lucide-react";
 import { LogoIcon } from "@/components/ui/logo";
 import Link from "next/link";
@@ -61,6 +62,7 @@ export default function DashboardLayout({
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isDark, setIsDark] = useState(false);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Fetch user data
     const { data: user } = trpc.auth.me.useQuery();
@@ -72,6 +74,19 @@ export default function DashboardLayout({
             router.push("/login");
         }
     }, [router, isAuthenticated]);
+
+    // Keyboard shortcut: Ctrl+K / Cmd+K to focus search
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+            e.preventDefault();
+            searchInputRef.current?.focus();
+        }
+    }, []);
+
+    useEffect(() => {
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [handleKeyDown]);
 
     const handleLogout = () => {
         logout();
@@ -308,13 +323,19 @@ export default function DashboardLayout({
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <form onSubmit={handleSearch}>
                                 <Input
+                                    ref={searchInputRef}
                                     type="text"
                                     placeholder="Search documents..."
-                                    className="w-full bg-accent border-border pl-10 h-10 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-muted-foreground font-medium"
+                                    className="w-full bg-accent border-border pl-10 pr-16 h-10 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-muted-foreground font-medium"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </form>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 pointer-events-none">
+                                <kbd className="h-5 px-1.5 flex items-center justify-center rounded bg-background border border-border text-[10px] font-medium text-muted-foreground">
+                                    <Command className="h-2.5 w-2.5 mr-0.5" />K
+                                </kbd>
+                            </div>
                         </div>
                     </div>
 

@@ -6,16 +6,58 @@ import { Document } from "../db/models/Document";
 import { User } from "../db/models/User";
 import { processDocument } from "../services/document-processor";
 import { getStorageAdapter } from "../services/storage";
-import { searchVectorStore, deleteFromVectorDB } from "../services/vector-service";
-import { 
-    authorize, 
-    canAccessDocument, 
+import {
+    searchVectorStore,
+    deleteFromVectorDB,
+} from "../services/vector-service";
+import {
+    authorize,
+    canAccessDocument,
     filterDocumentsByPermission,
     getUserOrganizations,
     getUserAbility,
-    isMemberOf
+    isMemberOf,
 } from "../services/permissions";
 import mongoose from "mongoose";
+
+/**
+ * Deduplicate search results by documentId, keeping the highest scoring chunk for each document.
+ * Multiple chunks from the same document are merged into a single result with combined content.
+ */
+function deduplicateByDocument(results: SearchResult[]): SearchResult[] {
+    const documentMap = new Map<
+        string,
+        SearchResult & { allContent: string[] }
+    >();
+
+    for (const result of results) {
+        const docId = result.metadata?.documentId as string;
+        if (!docId) continue;
+
+        const existing = documentMap.get(docId);
+        if (!existing) {
+            // First chunk from this document
+            documentMap.set(docId, {
+                ...result,
+                allContent: [result.content],
+            });
+        } else {
+            // Add content from additional chunk
+            existing.allContent.push(result.content);
+            // Keep the higher score
+            if (result.score > existing.score) {
+                existing.score = result.score;
+            }
+        }
+    }
+
+    // Convert back to SearchResult array, combining content from multiple chunks
+    return Array.from(documentMap.values()).map(({ allContent, ...rest }) => ({
+        ...rest,
+        // Combine all chunks' content with separator for context
+        content: allContent.join("\n\n---\n\n"),
+    }));
+}
 
 // Extended upload schema with optional organizationId
 const FileUploadWithOrgSchema = FileUploadSchema.extend({
@@ -29,11 +71,15 @@ export const documentRouter = router({
             try {
                 // If organizationId provided, verify membership and permission
                 if (input.organizationId) {
-                    const isMember = await isMemberOf(ctx.userId!, input.organizationId);
+                    const isMember = await isMemberOf(
+                        ctx.userId!,
+                        input.organizationId
+                    );
                     if (!isMember) {
                         throw new TRPCError({
                             code: "FORBIDDEN",
-                            message: "You are not a member of this organization",
+                            message:
+                                "You are not a member of this organization",
                         });
                     }
 
@@ -72,7 +118,7 @@ export const documentRouter = router({
 
     list: protectedProcedure.query(async ({ ctx }) => {
         const userOrgs = await getUserOrganizations(ctx.userId!);
-        
+
         // Build query: personal documents OR organization documents OR shared documents
         const query: any = {
             $or: [
@@ -86,7 +132,9 @@ export const documentRouter = router({
         // Add organization documents if user is member of any organizations
         if (userOrgs.length > 0) {
             query.$or.push({
-                organizationId: { $in: userOrgs.map(id => new mongoose.Types.ObjectId(id)) },
+                organizationId: {
+                    $in: userOrgs.map((id) => new mongoose.Types.ObjectId(id)),
+                },
             });
         }
 
@@ -129,11 +177,16 @@ export const documentRouter = router({
             }
 
             // Check access permission
-            const hasAccess = await canAccessDocument(ctx.userId!, input.id, "read");
+            const hasAccess = await canAccessDocument(
+                ctx.userId!,
+                input.id,
+                "read"
+            );
             if (!hasAccess) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
-                    message: "You don't have permission to access this document",
+                    message:
+                        "You don't have permission to access this document",
                 });
             }
 
@@ -156,11 +209,15 @@ export const documentRouter = router({
         }),
 
     update: protectedProcedure
-        .input(z.object({
-            id: z.string(),
-            filename: z.string().optional(),
-            visibility: z.enum(["private", "organization", "public"]).optional(),
-        }))
+        .input(
+            z.object({
+                id: z.string(),
+                filename: z.string().optional(),
+                visibility: z
+                    .enum(["private", "organization", "public"])
+                    .optional(),
+            })
+        )
         .mutation(async ({ input, ctx }) => {
             const document = await Document.findById(input.id);
 
@@ -172,11 +229,16 @@ export const documentRouter = router({
             }
 
             // Check update permission
-            const hasAccess = await canAccessDocument(ctx.userId!, input.id, "update");
+            const hasAccess = await canAccessDocument(
+                ctx.userId!,
+                input.id,
+                "update"
+            );
             if (!hasAccess) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
-                    message: "You don't have permission to update this document",
+                    message:
+                        "You don't have permission to update this document",
                 });
             }
 
@@ -205,11 +267,16 @@ export const documentRouter = router({
             }
 
             // Check delete permission
-            const hasAccess = await canAccessDocument(ctx.userId!, input.id, "delete");
+            const hasAccess = await canAccessDocument(
+                ctx.userId!,
+                input.id,
+                "delete"
+            );
             if (!hasAccess) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
-                    message: "You don't have permission to delete this document",
+                    message:
+                        "You don't have permission to delete this document",
                 });
             }
 
@@ -247,11 +314,16 @@ export const documentRouter = router({
             }
 
             // Check read permission (download requires read access)
-            const hasAccess = await canAccessDocument(ctx.userId!, input.id, "read");
+            const hasAccess = await canAccessDocument(
+                ctx.userId!,
+                input.id,
+                "read"
+            );
             if (!hasAccess) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
-                    message: "You don't have permission to download this document",
+                    message:
+                        "You don't have permission to download this document",
                 });
             }
 
@@ -275,11 +347,14 @@ export const documentRouter = router({
         .mutation(async ({ input, ctx }) => {
             // Get user's organizations for filtering
             const userOrgs = await getUserOrganizations(ctx.userId!);
-            
+
             // If organizationId specified, verify membership
             let orgIds = userOrgs;
             if (input.organizationId) {
-                const isMember = await isMemberOf(ctx.userId!, input.organizationId);
+                const isMember = await isMemberOf(
+                    ctx.userId!,
+                    input.organizationId
+                );
                 if (!isMember) {
                     throw new TRPCError({
                         code: "FORBIDDEN",
@@ -289,18 +364,31 @@ export const documentRouter = router({
                 orgIds = [input.organizationId];
             }
 
-            // Search in vector store (includes organization documents)
-            const results = await searchVectorStore(
+            // Search in vector store (get more results to account for deduplication)
+            const expandedTopK = input.topK * 3;
+            const rawResults = await searchVectorStore(
                 input.query,
                 ctx.userId!,
-                input.topK,
+                expandedTopK,
                 undefined,
                 orgIds
             );
 
+            // Deduplicate results by documentId and limit to topK documents
+            const results = deduplicateByDocument(rawResults).slice(
+                0,
+                input.topK
+            );
+
             // Get unique document IDs from results
             const documentIds = [
-                ...new Set(results.map((r: SearchResult) => r.metadata.documentId as string).filter(Boolean)),
+                ...new Set(
+                    results
+                        .map(
+                            (r: SearchResult) => r.metadata.documentId as string
+                        )
+                        .filter(Boolean)
+                ),
             ];
 
             if (documentIds.length === 0) {
@@ -318,12 +406,16 @@ export const documentRouter = router({
 
             if (orgIds.length > 0) {
                 query.$or.push({
-                    organizationId: { $in: orgIds.map(id => new mongoose.Types.ObjectId(id)) },
+                    organizationId: {
+                        $in: orgIds.map(
+                            (id) => new mongoose.Types.ObjectId(id)
+                        ),
+                    },
                 });
             }
 
             const documents = await Document.find(query);
-            
+
             // Filter by permissions
             const accessibleDocs = await filterDocumentsByPermission(
                 ctx.userId!,
@@ -331,7 +423,9 @@ export const documentRouter = router({
                 "read"
             );
 
-            const accessibleDocIds = new Set(accessibleDocs.map(doc => doc._id.toString()));
+            const accessibleDocIds = new Set(
+                accessibleDocs.map((doc) => doc._id.toString())
+            );
             const documentsMap = new Map(
                 accessibleDocs.map((doc) => [doc._id.toString(), doc])
             );
@@ -344,22 +438,36 @@ export const documentRouter = router({
                 })
                 .map((result: SearchResult) => ({
                     ...result,
-                    document: documentsMap.get(result.metadata.documentId as string),
+                    document: documentsMap.get(
+                        result.metadata.documentId as string
+                    ),
                 }));
         }),
 
     // Share document (supports users, organizations, and public)
     share: protectedProcedure
-        .input(z.object({
-            documentId: z.string(),
-            shareType: z.enum(["user", "organization", "public"]),
-            // For user share
-            userIds: z.array(z.string()).optional(),
-            // For organization share
-            organizationIds: z.array(z.string()).optional(),
-            // Permissions to grant
-            permissions: z.array(z.enum(["manage", "create", "read", "update", "delete", "share", "export"])),
-        }))
+        .input(
+            z.object({
+                documentId: z.string(),
+                shareType: z.enum(["user", "organization", "public"]),
+                // For user share
+                userIds: z.array(z.string()).optional(),
+                // For organization share
+                organizationIds: z.array(z.string()).optional(),
+                // Permissions to grant
+                permissions: z.array(
+                    z.enum([
+                        "manage",
+                        "create",
+                        "read",
+                        "update",
+                        "delete",
+                        "share",
+                        "export",
+                    ])
+                ),
+            })
+        )
         .mutation(async ({ input, ctx }) => {
             const document = await Document.findById(input.documentId);
 
@@ -375,22 +483,22 @@ export const documentRouter = router({
                 if (document.organizationId) {
                     const ability = await getUserAbility(ctx.userId!);
                     const orgId = String(document.organizationId);
-                    const subject = {
-                        __typename: "Document" as const,
+
+                    const canShare = ability.can("manage", "Document", {
                         organizationId: orgId,
-                    };
-                    
-                    const canShare = ability.can("manage", subject);
+                    } as any);
                     if (!canShare) {
                         throw new TRPCError({
                             code: "FORBIDDEN",
-                            message: "You don't have permission to share this document",
+                            message:
+                                "You don't have permission to share this document",
                         });
                     }
                 } else {
                     throw new TRPCError({
                         code: "FORBIDDEN",
-                        message: "Only the document owner can share this document",
+                        message:
+                            "Only the document owner can share this document",
                     });
                 }
             }
@@ -398,7 +506,11 @@ export const documentRouter = router({
             if (input.shareType === "user" && input.userIds) {
                 // Share with specific users
                 const users = await User.find({
-                    _id: { $in: input.userIds.map(id => new mongoose.Types.ObjectId(id)) },
+                    _id: {
+                        $in: input.userIds.map(
+                            (id) => new mongoose.Types.ObjectId(id)
+                        ),
+                    },
                 });
 
                 if (users.length !== input.userIds.length) {
@@ -414,17 +526,23 @@ export const documentRouter = router({
                 }
 
                 // Update or add user shares
-                input.userIds.forEach(userId => {
-                    if (userId !== document.userId) { // Don't share with owner
-                        const existingIndex = document.sharedWithUsers.findIndex(
-                            s => s.userId === userId
-                        );
-                        
+                input.userIds.forEach((userId) => {
+                    if (userId !== document.userId) {
+                        // Don't share with owner
+                        const existingIndex =
+                            document.sharedWithUsers.findIndex(
+                                (s) => s.userId === userId
+                            );
+
                         if (existingIndex >= 0) {
                             // Update existing share
-                            document.sharedWithUsers[existingIndex].permissions = input.permissions;
-                            document.sharedWithUsers[existingIndex].sharedBy = ctx.userId!;
-                            document.sharedWithUsers[existingIndex].sharedAt = new Date();
+                            document.sharedWithUsers[
+                                existingIndex
+                            ].permissions = input.permissions;
+                            document.sharedWithUsers[existingIndex].sharedBy =
+                                ctx.userId!;
+                            document.sharedWithUsers[existingIndex].sharedAt =
+                                new Date();
                         } else {
                             // Add new share
                             document.sharedWithUsers.push({
@@ -443,7 +561,10 @@ export const documentRouter = router({
                     success: true,
                     message: `Document shared with ${users.length} user(s)`,
                 };
-            } else if (input.shareType === "organization" && input.organizationIds) {
+            } else if (
+                input.shareType === "organization" &&
+                input.organizationIds
+            ) {
                 // Share with organizations
                 // Verify user is member of all organizations
                 for (const orgId of input.organizationIds) {
@@ -462,21 +583,31 @@ export const documentRouter = router({
                 }
 
                 // Update or add organization shares
-                input.organizationIds.forEach(orgId => {
-                    if (orgId !== document.organizationId?.toString()) { // Don't share with same org
-                        const existingIndex = document.sharedWithOrganizations.findIndex(
-                            s => s.organizationId.toString() === orgId
-                        );
-                        
+                input.organizationIds.forEach((orgId) => {
+                    if (orgId !== document.organizationId?.toString()) {
+                        // Don't share with same org
+                        const existingIndex =
+                            document.sharedWithOrganizations.findIndex(
+                                (s) => s.organizationId.toString() === orgId
+                            );
+
                         if (existingIndex >= 0) {
                             // Update existing share
-                            document.sharedWithOrganizations[existingIndex].permissions = input.permissions;
-                            document.sharedWithOrganizations[existingIndex].sharedBy = ctx.userId!;
-                            document.sharedWithOrganizations[existingIndex].sharedAt = new Date();
+                            document.sharedWithOrganizations[
+                                existingIndex
+                            ].permissions = input.permissions;
+                            document.sharedWithOrganizations[
+                                existingIndex
+                            ].sharedBy = ctx.userId!;
+                            document.sharedWithOrganizations[
+                                existingIndex
+                            ].sharedAt = new Date();
                         } else {
                             // Add new share
                             document.sharedWithOrganizations.push({
-                                organizationId: new mongoose.Types.ObjectId(orgId),
+                                organizationId: new mongoose.Types.ObjectId(
+                                    orgId
+                                ),
                                 permissions: input.permissions,
                                 sharedAt: new Date(),
                                 sharedBy: ctx.userId!,
@@ -516,14 +647,16 @@ export const documentRouter = router({
 
     // Unshare document (supports users, organizations, and public)
     unshare: protectedProcedure
-        .input(z.object({
-            documentId: z.string(),
-            shareType: z.enum(["user", "organization", "public"]),
-            // For user unshare
-            userIds: z.array(z.string()).optional(),
-            // For organization unshare
-            organizationIds: z.array(z.string()).optional(),
-        }))
+        .input(
+            z.object({
+                documentId: z.string(),
+                shareType: z.enum(["user", "organization", "public"]),
+                // For user unshare
+                userIds: z.array(z.string()).optional(),
+                // For organization unshare
+                organizationIds: z.array(z.string()).optional(),
+            })
+        )
         .mutation(async ({ input, ctx }) => {
             const document = await Document.findById(input.documentId);
 
@@ -539,22 +672,22 @@ export const documentRouter = router({
                 if (document.organizationId) {
                     const ability = await getUserAbility(ctx.userId!);
                     const orgId = String(document.organizationId);
-                    const subject = {
-                        __typename: "Document" as const,
+
+                    const canShare = ability.can("manage", "Document", {
                         organizationId: orgId,
-                    };
-                    
-                    const canShare = ability.can("manage", subject);
+                    } as any);
                     if (!canShare) {
                         throw new TRPCError({
                             code: "FORBIDDEN",
-                            message: "You don't have permission to unshare this document",
+                            message:
+                                "You don't have permission to unshare this document",
                         });
                     }
                 } else {
                     throw new TRPCError({
                         code: "FORBIDDEN",
-                        message: "Only the document owner can unshare this document",
+                        message:
+                            "Only the document owner can unshare this document",
                     });
                 }
             }
@@ -562,11 +695,14 @@ export const documentRouter = router({
             if (input.shareType === "user" && input.userIds) {
                 // Unshare with specific users
                 if (!document.sharedWithUsers) {
-                    return { success: true, message: "No user shares to remove" };
+                    return {
+                        success: true,
+                        message: "No user shares to remove",
+                    };
                 }
 
                 document.sharedWithUsers = document.sharedWithUsers.filter(
-                    s => !input.userIds!.includes(s.userId)
+                    (s) => !input.userIds!.includes(s.userId)
                 );
 
                 await document.save();
@@ -575,15 +711,25 @@ export const documentRouter = router({
                     success: true,
                     message: `Removed share from ${input.userIds.length} user(s)`,
                 };
-            } else if (input.shareType === "organization" && input.organizationIds) {
+            } else if (
+                input.shareType === "organization" &&
+                input.organizationIds
+            ) {
                 // Unshare with organizations
                 if (!document.sharedWithOrganizations) {
-                    return { success: true, message: "No organization shares to remove" };
+                    return {
+                        success: true,
+                        message: "No organization shares to remove",
+                    };
                 }
 
-                document.sharedWithOrganizations = document.sharedWithOrganizations.filter(
-                    s => !input.organizationIds!.includes(s.organizationId.toString())
-                );
+                document.sharedWithOrganizations =
+                    document.sharedWithOrganizations.filter(
+                        (s) =>
+                            !input.organizationIds!.includes(
+                                s.organizationId.toString()
+                            )
+                    );
 
                 await document.save();
 
@@ -613,9 +759,11 @@ export const documentRouter = router({
 
     // List users for sharing (searchable)
     listUsers: protectedProcedure
-        .input(z.object({
-            query: z.string().optional().default(""),
-        }))
+        .input(
+            z.object({
+                query: z.string().optional().default(""),
+            })
+        )
         .query(async ({ input, ctx }) => {
             // Don't include current user
             const searchQuery = input.query.trim().toLowerCase();
@@ -644,9 +792,11 @@ export const documentRouter = router({
 
     // Get share information for a document
     getShareInfo: protectedProcedure
-        .input(z.object({
-            documentId: z.string(),
-        }))
+        .input(
+            z.object({
+                documentId: z.string(),
+            })
+        )
         .query(async ({ input, ctx }) => {
             const document = await Document.findById(input.documentId);
 
@@ -658,7 +808,11 @@ export const documentRouter = router({
             }
 
             // Check access
-            const hasAccess = await canAccessDocument(ctx.userId!, input.documentId, "read");
+            const hasAccess = await canAccessDocument(
+                ctx.userId!,
+                input.documentId,
+                "read"
+            );
             if (!hasAccess) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
@@ -667,17 +821,31 @@ export const documentRouter = router({
             }
 
             // Get shared users with permissions
-            let sharedUsers: Array<{ id: string; email: string; name: string; permissions: string[] }> = [];
-            if (document.sharedWithUsers && document.sharedWithUsers.length > 0) {
-                const userIds = document.sharedWithUsers.map(s => s.userId);
+            let sharedUsers: Array<{
+                id: string;
+                email: string;
+                name: string;
+                permissions: string[];
+            }> = [];
+            if (
+                document.sharedWithUsers &&
+                document.sharedWithUsers.length > 0
+            ) {
+                const userIds = document.sharedWithUsers.map((s) => s.userId);
                 const users = await User.find({
-                    _id: { $in: userIds.map(id => new mongoose.Types.ObjectId(id)) },
+                    _id: {
+                        $in: userIds.map(
+                            (id) => new mongoose.Types.ObjectId(id)
+                        ),
+                    },
                 })
                     .select("_id email name")
                     .lean();
 
-                sharedUsers = document.sharedWithUsers.map(share => {
-                    const user = users.find(u => u._id.toString() === share.userId);
+                sharedUsers = document.sharedWithUsers.map((share) => {
+                    const user = users.find(
+                        (u) => u._id.toString() === share.userId
+                    );
                     return {
                         id: share.userId,
                         email: user?.email || "",
@@ -688,39 +856,56 @@ export const documentRouter = router({
             }
 
             // Get shared organizations with permissions
-            let sharedOrganizations: Array<{ id: string; name: string; permissions: string[] }> = [];
-            if (document.sharedWithOrganizations && document.sharedWithOrganizations.length > 0) {
-                const orgIds = document.sharedWithOrganizations.map(s => s.organizationId);
-                const Organization = (await import("../db/models/Organization")).Organization;
+            let sharedOrganizations: Array<{
+                id: string;
+                name: string;
+                permissions: string[];
+            }> = [];
+            if (
+                document.sharedWithOrganizations &&
+                document.sharedWithOrganizations.length > 0
+            ) {
+                const orgIds = document.sharedWithOrganizations.map(
+                    (s) => s.organizationId
+                );
+                const Organization = (await import("../db/models/Organization"))
+                    .Organization;
                 const orgs = await Organization.find({
                     _id: { $in: orgIds },
                 })
                     .select("_id name")
                     .lean();
 
-                sharedOrganizations = document.sharedWithOrganizations.map(share => {
-                    const orgId = share.organizationId instanceof mongoose.Types.ObjectId
-                        ? share.organizationId.toString()
-                        : String(share.organizationId);
-                    const org = orgs.find(o => o._id.toString() === orgId);
-                    return {
-                        id: orgId,
-                        name: org?.name || "",
-                        permissions: share.permissions,
-                    };
-                });
+                sharedOrganizations = document.sharedWithOrganizations.map(
+                    (share) => {
+                        const orgId =
+                            share.organizationId instanceof
+                            mongoose.Types.ObjectId
+                                ? share.organizationId.toString()
+                                : String(share.organizationId);
+                        const org = orgs.find(
+                            (o) => o._id.toString() === orgId
+                        );
+                        return {
+                            id: orgId,
+                            name: org?.name || "",
+                            permissions: share.permissions,
+                        };
+                    }
+                );
             }
 
             // Get public share info
-            const publicShare = document.publicShare && document.publicShare.enabled
-                ? {
-                    enabled: true,
-                    permissions: document.publicShare.permissions || [],
-                }
-                : {
-                    enabled: false,
-                    permissions: [] as string[],
-                };
+            const publicShare =
+                document.publicShare && document.publicShare.enabled
+                    ? {
+                          enabled: true,
+                          permissions: document.publicShare.permissions || [],
+                      }
+                    : {
+                          enabled: false,
+                          permissions: [] as string[],
+                      };
 
             return {
                 sharedUsers,
@@ -731,9 +916,11 @@ export const documentRouter = router({
 
     // Get shared users for a document (backward compatibility)
     getSharedUsers: protectedProcedure
-        .input(z.object({
-            documentId: z.string(),
-        }))
+        .input(
+            z.object({
+                documentId: z.string(),
+            })
+        )
         .query(async ({ input, ctx }) => {
             const document = await Document.findById(input.documentId);
 
@@ -745,7 +932,11 @@ export const documentRouter = router({
             }
 
             // Check access
-            const hasAccess = await canAccessDocument(ctx.userId!, input.documentId, "read");
+            const hasAccess = await canAccessDocument(
+                ctx.userId!,
+                input.documentId,
+                "read"
+            );
             if (!hasAccess) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
@@ -754,17 +945,31 @@ export const documentRouter = router({
             }
 
             // Get shared users with permissions
-            let sharedUsers: Array<{ id: string; email: string; name: string; permissions: string[] }> = [];
-            if (document.sharedWithUsers && document.sharedWithUsers.length > 0) {
-                const userIds = document.sharedWithUsers.map(s => s.userId);
+            let sharedUsers: Array<{
+                id: string;
+                email: string;
+                name: string;
+                permissions: string[];
+            }> = [];
+            if (
+                document.sharedWithUsers &&
+                document.sharedWithUsers.length > 0
+            ) {
+                const userIds = document.sharedWithUsers.map((s) => s.userId);
                 const users = await User.find({
-                    _id: { $in: userIds.map(id => new mongoose.Types.ObjectId(id)) },
+                    _id: {
+                        $in: userIds.map(
+                            (id) => new mongoose.Types.ObjectId(id)
+                        ),
+                    },
                 })
                     .select("_id email name")
                     .lean();
 
-                sharedUsers = document.sharedWithUsers.map(share => {
-                    const user = users.find(u => u._id.toString() === share.userId);
+                sharedUsers = document.sharedWithUsers.map((share) => {
+                    const user = users.find(
+                        (u) => u._id.toString() === share.userId
+                    );
                     return {
                         id: share.userId,
                         email: user?.email || "",

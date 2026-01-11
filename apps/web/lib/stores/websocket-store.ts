@@ -1,0 +1,111 @@
+import { create } from 'zustand';
+import { io, Socket } from 'socket.io-client';
+import { playSuccessSound, playErrorSound } from '../notification-sound';
+
+interface WebSocketState {
+  socket: Socket | null;
+  isConnected: boolean;
+  connect: (token: string) => void;
+  disconnect: () => void;
+  onDocumentProcessed?: (data: {
+    documentId: string;
+    filename: string;
+    status: 'completed' | 'failed';
+    error?: string;
+  }) => void;
+  onChatCompleted?: (data: {
+    chatId: string;
+    message: string;
+    sourcesCount: number;
+  }) => void;
+  setDocumentHandler: (handler?: WebSocketState['onDocumentProcessed']) => void;
+  setChatHandler: (handler?: WebSocketState['onChatCompleted']) => void;
+}
+
+export const useWebSocketStore = create<WebSocketState>((set, get) => ({
+  socket: null,
+  isConnected: false,
+  onDocumentProcessed: undefined,
+  onChatCompleted: undefined,
+  connect: (token) => {
+    if (get().socket?.connected) return;
+    
+    const url = process.env.NEXT_PUBLIC_SERVER_URL || 
+      process.env.NEXT_PUBLIC_API_URL?.replace('/trpc', '') || 
+      'http://localhost:3001';
+
+    const socket = io(url, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+    });
+
+    socket.on('connect', () => {
+      console.log('🔌 WebSocket connected');
+      set({ isConnected: true });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('🔌 WebSocket disconnected');
+      set({ isConnected: false });
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('WebSocket connection error:', error);
+    });
+
+    // Document processed event
+    socket.on('document:processed', (data) => {
+      console.log('📄 Document processed:', data);
+
+      if (data.status === 'completed') {
+        playSuccessSound();
+        
+        if (typeof window !== 'undefined' && Notification.permission === 'granted') {
+          new Notification('Document Ready', {
+            body: `${data.filename} has been processed successfully!`,
+            icon: '/favicon.ico',
+            badge: '/favicon.ico',
+          });
+        }
+      } else {
+        playErrorSound();
+        
+        if (typeof window !== 'undefined' && Notification.permission === 'granted') {
+          new Notification('Processing Failed', {
+            body: `Failed to process ${data.filename}: ${data.error || 'Unknown error'}`,
+            icon: '/favicon.ico',
+            badge: '/favicon.ico',
+          });
+        }
+      }
+
+      get().onDocumentProcessed?.(data);
+    });
+
+    // Chat completed event
+    socket.on('chat:completed', (data) => {
+      console.log('💬 Chat completed:', data);
+
+      playSuccessSound();
+
+      if (typeof window !== 'undefined' && Notification.permission === 'granted') {
+        new Notification('RAG Search Complete', {
+          body: `Found ${data.sourcesCount} relevant sources. Response ready!`,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+        });
+      }
+
+      get().onChatCompleted?.(data);
+    });
+
+    set({ socket });
+  },
+  disconnect: () => {
+    get().socket?.disconnect();
+    set({ socket: null, isConnected: false });
+  },
+  setDocumentHandler: (handler) => set({ onDocumentProcessed: handler }),
+  setChatHandler: (handler) => set({ onChatCompleted: handler }),
+}));

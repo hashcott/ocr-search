@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { authService } from "@/lib/auth";
+import { useAuthStore } from "@/lib/stores";
 import {
     FileText,
     Search,
@@ -64,15 +64,17 @@ export default function DashboardLayout({
 
     // Fetch user data
     const { data: user } = trpc.auth.me.useQuery();
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const logout = useAuthStore((state) => state.logout);
 
     useEffect(() => {
-        if (!authService.isAuthenticated()) {
+        if (!isAuthenticated) {
             router.push("/login");
         }
-    }, [router]);
+    }, [router, isAuthenticated]);
 
     const handleLogout = () => {
-        authService.logout();
+        logout();
         router.push("/login");
     };
 

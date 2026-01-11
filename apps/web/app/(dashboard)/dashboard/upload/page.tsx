@@ -32,7 +32,7 @@ import {
     Building2,
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
-import { useWebSocket } from "@/lib/use-websocket";
+import { useWebSocketStore } from "@/lib/stores";
 
 interface FileWithProgress {
     file: File;
@@ -60,8 +60,10 @@ export default function UploadPage() {
     }, []);
 
     // WebSocket integration for real-time notifications
-    useWebSocket(
-        (data) => {
+    const setDocumentHandler = useWebSocketStore((state) => state.setDocumentHandler);
+
+    useEffect(() => {
+        setDocumentHandler((data) => {
             // Handle document processed notification
             if (data.status === "completed") {
                 setFiles((prev) =>
@@ -97,9 +99,8 @@ export default function UploadPage() {
                     variant: "destructive",
                 });
             }
-        },
-        undefined // No chat handler needed here
-    );
+        });
+    }, [setDocumentHandler, toast]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const newFiles = acceptedFiles.map((file) => ({

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
-import { authService } from "@/lib/auth";
+import { useAuthStore } from "@/lib/stores";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -16,9 +16,11 @@ export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    const setAuth = useAuthStore((state) => state.setAuth);
+    
     const registerMutation = trpc.auth.register.useMutation({
         onSuccess: (data) => {
-            authService.setAuth(data.user as any, data.token);
+            setAuth(data.user as any, data.token);
             toast({
                 title: "Success",
                 description: "Account created successfully",

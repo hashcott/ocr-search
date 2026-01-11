@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
-import { useWebSocket } from "@/lib/use-websocket";
+import { useChatStore, useUIStore, useWebSocketStore } from "@/lib/stores";
 
 interface Source {
   id?: string;
@@ -40,11 +40,24 @@ interface Message {
 
 export default function SearchPage() {
   const { toast } = useToast();
-  const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Zustand stores
+  const query = useChatStore((state) => state.query);
+  const setQuery = useChatStore((state) => state.setQuery);
+  const messages = useChatStore((state) => state.messages);
+  const setMessages = useChatStore((state) => state.setMessages);
+  const addMessage = useChatStore((state) => state.addMessage);
+  const isStreaming = useChatStore((state) => state.isStreaming);
+  const setIsStreaming = useChatStore((state) => state.setIsStreaming);
+  const currentChatId = useChatStore((state) => state.currentChatId);
+  const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+  const resetChat = useChatStore((state) => state.reset);
+  
+  const sidebarOpen = useUIStore((state) => state.sidebarOpen);
+  const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
+  
+  const setChatHandler = useWebSocketStore((state) => state.setChatHandler);
 
   // Request notification permission on mount
   useEffect(() => {
@@ -56,9 +69,8 @@ export default function SearchPage() {
   }, []);
 
   // WebSocket integration for real-time chat notifications
-  useWebSocket(
-    undefined, // No document handler needed here
-    (data) => {
+  useEffect(() => {
+    setChatHandler((data) => {
       // Handle chat completed notification
       if (data.chatId === currentChatId) {
         toast({
@@ -66,8 +78,8 @@ export default function SearchPage() {
           description: `Found ${data.sourcesCount} relevant sources`,
         });
       }
-    }
-  );
+    });
+  }, [currentChatId, setChatHandler, toast]);
 
   const { data: chats, refetch: refetchChats } = trpc.chat.list.useQuery();
 
@@ -88,8 +100,7 @@ export default function SearchPage() {
       toast({ title: "Chat deleted" });
       refetchChats();
       if (currentChatId) {
-        setCurrentChatId(null);
-        setMessages([]);
+        resetChat();
       }
     },
   });
@@ -132,7 +143,7 @@ export default function SearchPage() {
 
     // Add user message to UI immediately
     const userMessage: Message = { role: "user", content: userQuery };
-    setMessages((prev) => [...prev, userMessage]);
+    addMessage(userMessage);
     setQuery("");
     setIsStreaming(true);
 
@@ -144,14 +155,11 @@ export default function SearchPage() {
       });
 
       // Add assistant response
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: result.message,
-          sources: result.sources as any,
-        },
-      ]);
+      addMessage({
+        role: "assistant",
+        content: result.message,
+        sources: result.sources as any,
+      });
 
       // Refetch chat to sync with database
       refetchChats();
@@ -164,9 +172,11 @@ export default function SearchPage() {
       });
     } catch (error) {
       // Remove user message on error
-      setMessages((prev) => prev.filter((msg, idx) =>
-        !(msg.role === "user" && msg.content === userQuery && idx === prev.length - 1)
-      ));
+      const currentMessages = useChatStore.getState().messages;
+      const filteredMessages = currentMessages.filter((msg, idx) =>
+        !(msg.role === "user" && msg.content === userQuery && idx === currentMessages.length - 1)
+      );
+      setMessages(filteredMessages);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to send message",
@@ -178,11 +188,8 @@ export default function SearchPage() {
   };
 
   const handleNewChat = () => {
-    setCurrentChatId(null);
-    setMessages([]);
+    resetChat();
   };
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-1 h-full bg-background/50 backdrop-blur-3xl relative overflow-hidden animate-fadeIn">

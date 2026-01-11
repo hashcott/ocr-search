@@ -14,7 +14,6 @@ import {
   MessageSquare,
   LayoutDashboard,
   ChevronDown,
-  Bell,
   User,
   FolderOpen,
   Building2,
@@ -22,6 +21,7 @@ import {
   Sun,
   Command,
 } from 'lucide-react';
+import { NotificationDropdown } from '@/components/ui/notification-dropdown';
 import { LogoIcon } from '@/components/ui/logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -343,14 +343,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               )}
             </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-accent text-muted-foreground hover:text-foreground relative h-9 w-9 rounded-lg transition-colors"
-            >
-              <Bell className="h-[18px] w-[18px]" />
-              <span className="bg-primary absolute right-2 top-2 h-2 w-2 rounded-full" />
-            </Button>
+            <NotificationDropdown />
 
             <div className="bg-border/50 mx-1 hidden h-5 w-px sm:block" />
 

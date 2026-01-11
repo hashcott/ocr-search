@@ -2,9 +2,20 @@ import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
 import { playSuccessSound, playErrorSound } from '../notification-sound';
 
+export interface NotificationData {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  link?: string;
+  createdAt: string;
+}
+
 interface WebSocketState {
   socket: Socket | null;
   isConnected: boolean;
+  unreadNotificationCount: number;
   connect: (token: string) => void;
   disconnect: () => void;
   onDocumentProcessed?: (data: {
@@ -14,15 +25,20 @@ interface WebSocketState {
     error?: string;
   }) => void;
   onChatCompleted?: (data: { chatId: string; message: string; sourcesCount: number }) => void;
+  onNewNotification?: (notification: NotificationData) => void;
   setDocumentHandler: (handler?: WebSocketState['onDocumentProcessed']) => void;
   setChatHandler: (handler?: WebSocketState['onChatCompleted']) => void;
+  setNotificationHandler: (handler?: WebSocketState['onNewNotification']) => void;
+  setUnreadCount: (count: number) => void;
 }
 
 export const useWebSocketStore = create<WebSocketState>((set, get) => ({
   socket: null,
   isConnected: false,
+  unreadNotificationCount: 0,
   onDocumentProcessed: undefined,
   onChatCompleted: undefined,
+  onNewNotification: undefined,
   connect: (token) => {
     if (get().socket?.connected) return;
 
@@ -97,12 +113,43 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
       get().onChatCompleted?.(data);
     });
 
+    // New notification event
+    socket.on('notification:new', (notification: NotificationData) => {
+      console.log('🔔 New notification:', notification);
+
+      playSuccessSound();
+
+      // Show browser notification
+      if (typeof window !== 'undefined' && Notification.permission === 'granted') {
+        new Notification(notification.title, {
+          body: notification.message,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+        });
+      }
+
+      get().onNewNotification?.(notification);
+    });
+
+    // Notification count update event
+    socket.on('notification:count', (data: { unreadCount: number }) => {
+      console.log('🔔 Notification count:', data.unreadCount);
+      set({ unreadNotificationCount: data.unreadCount });
+    });
+
+    // Notification read event
+    socket.on('notification:read', (data: { notificationId: string }) => {
+      console.log('🔔 Notification read:', data.notificationId);
+    });
+
     set({ socket });
   },
   disconnect: () => {
     get().socket?.disconnect();
-    set({ socket: null, isConnected: false });
+    set({ socket: null, isConnected: false, unreadNotificationCount: 0 });
   },
   setDocumentHandler: (handler) => set({ onDocumentProcessed: handler }),
   setChatHandler: (handler) => set({ onChatCompleted: handler }),
+  setNotificationHandler: (handler) => set({ onNewNotification: handler }),
+  setUnreadCount: (count) => set({ unreadNotificationCount: count }),
 }));

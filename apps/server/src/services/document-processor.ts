@@ -3,6 +3,7 @@ import { getStorageAdapter } from './storage';
 import { getProcessorForFile } from './processors';
 import { storeInVectorDB, deleteFromVectorDB } from './vector-service';
 import { emitDocumentProcessed } from './websocket';
+import { createNotification } from '../routers/notification';
 import mongoose from 'mongoose';
 
 export async function processDocument(
@@ -74,6 +75,19 @@ export async function processDocument(
       status: 'completed',
     });
 
+    // Create notification for successful document processing
+    try {
+      await createNotification(
+        userId,
+        'document_processed',
+        'Document Ready',
+        `Your document "${document.filename}" has been processed successfully and is ready for search.`,
+        { link: '/dashboard/documents', metadata: { documentId: document._id.toString() } }
+      );
+    } catch (notifyError) {
+      console.error('Failed to create notification:', notifyError);
+    }
+
     return {
       id: document._id.toString(),
       filename: document.filename,
@@ -97,6 +111,15 @@ export async function processDocument(
           status: 'failed',
           error: errorMessage,
         });
+
+        // Create notification for failed document processing
+        await createNotification(
+          userId,
+          'document_failed',
+          'Document Processing Failed',
+          `Failed to process "${document.filename}": ${errorMessage}`,
+          { link: '/dashboard/documents', metadata: { documentId: document._id.toString() } }
+        );
       } catch (updateError) {
         console.error('Failed to update document status:', updateError);
       }
@@ -194,6 +217,19 @@ export async function reindexDocument(documentId: string, userId: string) {
       status: 'completed',
     });
 
+    // Create notification for successful reindex
+    try {
+      await createNotification(
+        userId,
+        'document_processed',
+        'Document Reindexed',
+        `Your document "${document.filename}" has been reindexed successfully.`,
+        { link: '/dashboard/documents', metadata: { documentId: document._id.toString() } }
+      );
+    } catch (notifyError) {
+      console.error('Failed to create notification:', notifyError);
+    }
+
     return {
       id: document._id.toString(),
       filename: document.filename,
@@ -215,6 +251,19 @@ export async function reindexDocument(documentId: string, userId: string) {
       status: 'failed',
       error: errorMessage,
     });
+
+    // Create notification for failed reindex
+    try {
+      await createNotification(
+        userId,
+        'document_failed',
+        'Reindex Failed',
+        `Failed to reindex "${document.filename}": ${errorMessage}`,
+        { link: '/dashboard/documents', metadata: { documentId: document._id.toString() } }
+      );
+    } catch (notifyError) {
+      console.error('Failed to create notification:', notifyError);
+    }
 
     throw new Error(errorMessage);
   }

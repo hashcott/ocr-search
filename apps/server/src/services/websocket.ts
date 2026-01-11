@@ -79,3 +79,42 @@ export function emitChatCompleted(
   const socketIO = getIO();
   socketIO.to(`user:${userId}`).emit('chat:completed', data);
 }
+
+// Notification events
+export interface NotificationData {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  link?: string;
+  createdAt: string;
+}
+
+export function emitNotification(userId: string, notification: NotificationData) {
+  try {
+    const socketIO = getIO();
+    socketIO.to(`user:${userId}`).emit('notification:new', notification);
+  } catch (error) {
+    // WebSocket not initialized yet, skip
+    console.warn('WebSocket not ready for notification emit');
+  }
+}
+
+export function emitNotificationRead(userId: string, notificationId: string) {
+  try {
+    const socketIO = getIO();
+    socketIO.to(`user:${userId}`).emit('notification:read', { notificationId });
+  } catch (error) {
+    console.warn('WebSocket not ready for notification read emit');
+  }
+}
+
+export function emitNotificationCountUpdate(userId: string, unreadCount: number) {
+  try {
+    const socketIO = getIO();
+    socketIO.to(`user:${userId}`).emit('notification:count', { unreadCount });
+  } catch (error) {
+    console.warn('WebSocket not ready for notification count emit');
+  }
+}

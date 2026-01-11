@@ -5,6 +5,7 @@ import { Organization } from '../db/models/Organization';
 import { Membership, ROLE_HIERARCHY } from '../db/models/Membership';
 import { User } from '../db/models/User';
 import { getUserAbility, authorize } from '../services/permissions';
+import { createNotification } from './notification';
 
 // Input schemas
 const CreateOrganizationSchema = z.object({
@@ -294,6 +295,31 @@ export const organizationRouter = router({
       joinedAt: new Date(),
     });
 
+    // Get organization and inviter info for notification
+    const [organization, inviter] = await Promise.all([
+      Organization.findById(input.organizationId).select('name').lean(),
+      User.findById(ctx.userId).select('name email').lean(),
+    ]);
+
+    const orgName = organization?.name || 'an organization';
+    const inviterName = inviter?.name || inviter?.email || 'Someone';
+
+    // Create notification for invited user
+    try {
+      await createNotification(
+        user._id.toString(),
+        'organization_joined',
+        'Added to Organization',
+        `${inviterName} added you to "${orgName}" as ${input.role}.`,
+        {
+          link: `/dashboard/organization/${input.organizationId}`,
+          metadata: { organizationId: input.organizationId },
+        }
+      );
+    } catch (notifyError) {
+      console.error('Failed to create invite notification:', notifyError);
+    }
+
     return {
       id: membership._id.toString(),
       userId: user._id.toString(),
@@ -355,6 +381,27 @@ export const organizationRouter = router({
 
       targetMembership.role = input.role;
       await targetMembership.save();
+
+      // Create notification for role change
+      try {
+        const organization = await Organization.findById(input.organizationId)
+          .select('name')
+          .lean();
+        const orgName = organization?.name || 'the organization';
+
+        await createNotification(
+          input.userId,
+          'organization_joined',
+          'Role Updated',
+          `Your role in "${orgName}" has been changed to ${input.role}.`,
+          {
+            link: `/dashboard/organization/${input.organizationId}`,
+            metadata: { organizationId: input.organizationId },
+          }
+        );
+      } catch (notifyError) {
+        console.error('Failed to create role update notification:', notifyError);
+      }
 
       return { success: true, newRole: input.role };
     }),

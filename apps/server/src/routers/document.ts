@@ -15,6 +15,7 @@ import {
   getUserAbility,
   isMemberOf,
 } from '../services/permissions';
+import { createNotification } from './notification';
 import mongoose from 'mongoose';
 
 /**
@@ -513,6 +514,27 @@ export const documentRouter = router({
         });
 
         await document.save();
+
+        // Get current user for notification
+        const currentUser = await User.findById(ctx.userId).select('name email').lean();
+        const sharerName = currentUser?.name || currentUser?.email || 'Someone';
+
+        // Create notifications for shared users
+        for (const userId of input.userIds) {
+          if (userId !== document.userId) {
+            try {
+              await createNotification(
+                userId,
+                'document_shared',
+                'Document Shared With You',
+                `${sharerName} shared the document "${document.filename}" with you.`,
+                { link: '/dashboard/documents', metadata: { documentId: document._id.toString() } }
+              );
+            } catch (notifyError) {
+              console.error('Failed to create share notification:', notifyError);
+            }
+          }
+        }
 
         return {
           success: true,

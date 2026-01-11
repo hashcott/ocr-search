@@ -3,7 +3,7 @@ import { FileProcessor, ProcessedDocument } from "@fileai/shared";
 export class TextProcessor implements FileProcessor {
   supportedTypes = ["text/plain"];
 
-  async process(file: Buffer, filename: string): Promise<ProcessedDocument> {
+  async process(file: Buffer, _filename: string): Promise<ProcessedDocument> {
     try {
       const text = file.toString("utf-8");
 

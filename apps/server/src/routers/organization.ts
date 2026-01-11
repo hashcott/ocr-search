@@ -1,12 +1,8 @@
 import { router, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Organization, OrganizationType } from "../db/models/Organization";
-import {
-    Membership,
-    MemberRole,
-    ROLE_HIERARCHY,
-} from "../db/models/Membership";
+import { Organization } from "../db/models/Organization";
+import { Membership, ROLE_HIERARCHY } from "../db/models/Membership";
 import { User } from "../db/models/User";
 import { getUserAbility, authorize } from "../services/permissions";
 
@@ -126,7 +122,7 @@ export const organizationRouter = router({
         );
 
         return memberships.map((m) => {
-            const org = m.organizationId as any;
+            const org = m.organizationId as typeof Organization.prototype;
             return {
                 id: org._id.toString(),
                 name: org.name,
@@ -271,7 +267,7 @@ export const organizationRouter = router({
             );
 
             return memberships.map((m) => {
-                const user = m.userId as any;
+                const user = m.userId as typeof User.prototype;
                 return {
                     id: m._id.toString(),
                     userId: user._id.toString(),
@@ -420,7 +416,8 @@ export const organizationRouter = router({
                 });
             }
 
-            membership.customPermissions = input.customPermissions as any;
+            membership.customPermissions =
+                input.customPermissions as typeof membership.customPermissions;
             await membership.save();
 
             return { success: true };

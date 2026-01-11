@@ -4,7 +4,7 @@ import pdf from "pdf-parse";
 export class PDFProcessor implements FileProcessor {
   supportedTypes = ["application/pdf"];
 
-  async process(file: Buffer, filename: string): Promise<ProcessedDocument> {
+  async process(file: Buffer, _filename: string): Promise<ProcessedDocument> {
     try {
       // First try with pdf-parse
       const data = await pdf(file);
@@ -27,7 +27,7 @@ export class PDFProcessor implements FileProcessor {
   }
 
   // TODO: Implement OCR fallback
-  private async processWithOCR(file: Buffer): Promise<ProcessedDocument> {
+  private async processWithOCR(_file: Buffer): Promise<ProcessedDocument> {
     // This would call Ollama OCR or Deepseek OCR API
     // For now, return empty
     throw new Error("OCR not implemented yet");

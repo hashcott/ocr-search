@@ -23,16 +23,16 @@ export function initializeWebSocket(server: HTTPServer) {
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      (socket as any).userId = decoded.userId;
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+      (socket as unknown as { userId: string }).userId = decoded.userId;
       next();
-    } catch (err) {
+    } catch (_err) {
       next(new Error("Authentication error: Invalid token"));
     }
   });
 
   io.on("connection", (socket: Socket) => {
-    const userId = (socket as any).userId;
+    const userId = (socket as unknown as { userId: string }).userId;
     console.log(`🔌 WebSocket connected: User ${userId}`);
 
     // Join user's personal room

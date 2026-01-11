@@ -120,7 +120,7 @@ export const documentRouter = router({
         const userOrgs = await getUserOrganizations(ctx.userId!);
 
         // Build query: personal documents OR organization documents OR shared documents
-        const query: any = {
+        const query: Record<string, unknown> = {
             $or: [
                 // Personal documents
                 { userId: ctx.userId, organizationId: null },
@@ -396,7 +396,7 @@ export const documentRouter = router({
             }
 
             // Fetch document metadata (including organization documents and shared documents)
-            const query: any = {
+            const query: Record<string, unknown> = {
                 _id: { $in: documentIds },
                 $or: [
                     { userId: ctx.userId, organizationId: null },
@@ -484,9 +484,10 @@ export const documentRouter = router({
                     const ability = await getUserAbility(ctx.userId!);
                     const orgId = String(document.organizationId);
 
-                    const canShare = ability.can("manage", "Document", {
+                    const canShare = ability.can("manage", {
+                        __typename: "Document" as const,
                         organizationId: orgId,
-                    } as any);
+                    });
                     if (!canShare) {
                         throw new TRPCError({
                             code: "FORBIDDEN",
@@ -611,7 +612,7 @@ export const documentRouter = router({
                                 permissions: input.permissions,
                                 sharedAt: new Date(),
                                 sharedBy: ctx.userId!,
-                            } as any);
+                            } as (typeof document.sharedWithOrganizations)[0]);
                         }
                     }
                 });
@@ -673,9 +674,10 @@ export const documentRouter = router({
                     const ability = await getUserAbility(ctx.userId!);
                     const orgId = String(document.organizationId);
 
-                    const canShare = ability.can("manage", "Document", {
+                    const canShare = ability.can("manage", {
+                        __typename: "Document" as const,
                         organizationId: orgId,
-                    } as any);
+                    });
                     if (!canShare) {
                         throw new TRPCError({
                             code: "FORBIDDEN",
@@ -767,7 +769,7 @@ export const documentRouter = router({
         .query(async ({ input, ctx }) => {
             // Don't include current user
             const searchQuery = input.query.trim().toLowerCase();
-            const query: any = {
+            const query: Record<string, unknown> = {
                 _id: { $ne: new mongoose.Types.ObjectId(ctx.userId) },
             };
 

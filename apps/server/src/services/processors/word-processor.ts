@@ -7,7 +7,7 @@ export class WordProcessor implements FileProcessor {
     "application/msword", // .doc
   ];
 
-  async process(file: Buffer, filename: string): Promise<ProcessedDocument> {
+  async process(file: Buffer, _filename: string): Promise<ProcessedDocument> {
     try {
       const result = await mammoth.extractRawText({ buffer: file });
 

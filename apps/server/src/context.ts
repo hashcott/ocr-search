@@ -5,7 +5,7 @@ import { JWT_SECRET } from "./config/jwt";
 
 export async function createContext({
   req,
-  res,
+  res: _res,
 }: CreateExpressContextOptions): Promise<Context> {
   // Get token from authorization header
   const token = req.headers.authorization?.split(" ")[1];
@@ -25,7 +25,7 @@ export async function createContext({
       userId: decoded.userId,
       userRole: decoded.role,
     };
-  } catch (error) {
+  } catch (_error) {
     // Invalid token
     return {};
   }

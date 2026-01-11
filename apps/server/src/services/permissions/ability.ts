@@ -40,7 +40,7 @@ const resourceToSubject: Record<ResourceType, Subjects> = {
  * Build ability (permissions) for a user based on their memberships
  */
 export function defineAbilityFor(context: AbilityContext): AppAbility {
-  const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
+  const { can, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
   // For each organization the user is a member of
   for (const membership of context.memberships) {
@@ -76,9 +76,9 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
   }
 
   // Users can always read their own data (regardless of organization)
-  can("read", "Document", { userId: context.userId } as any);
-  can("read", "Chat", { userId: context.userId } as any);
-  can("manage", "Chat", { userId: context.userId } as any);
+  can("read", "Document", { userId: context.userId });
+  can("read", "Chat", { userId: context.userId });
+  can("manage", "Chat", { userId: context.userId });
 
   return build();
 }
@@ -90,9 +90,9 @@ export function checkPermission(
   ability: AppAbility,
   action: Actions,
   resource: Subjects,
-  resourceData?: Record<string, any>
+  resourceData?: Record<string, unknown>
 ): boolean {
-  return ability.can(action, resource, resourceData as any);
+  return ability.can(action, resource, resourceData as ForcedSubject<Subjects>);
 }
 
 /**

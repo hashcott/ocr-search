@@ -4,7 +4,7 @@ import { XMLParser } from "fast-xml-parser";
 export class XMLProcessor implements FileProcessor {
   supportedTypes = ["application/xml", "text/xml"];
 
-  async process(file: Buffer, filename: string): Promise<ProcessedDocument> {
+  async process(file: Buffer, _filename: string): Promise<ProcessedDocument> {
     try {
       const parser = new XMLParser({
         ignoreAttributes: false,
@@ -29,7 +29,7 @@ export class XMLProcessor implements FileProcessor {
     }
   }
 
-  private jsonToText(obj: any, indent = 0): string {
+  private jsonToText(obj: unknown, indent = 0): string {
     let text = "";
     const spaces = "  ".repeat(indent);
 

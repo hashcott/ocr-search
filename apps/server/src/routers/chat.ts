@@ -145,7 +145,7 @@ export const chatRouter = router({
             })
         )
         .subscription(async ({ input, ctx }) => {
-            return observable<{ type: string; data: any }>((emit) => {
+            return observable<{ type: string; data: unknown }>((emit) => {
                 (async () => {
                     try {
                         const chat = await ChatHistory.findOne({

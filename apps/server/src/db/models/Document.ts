@@ -35,7 +35,7 @@ export interface IDocument extends MongooseDocument {
     pageCount?: number;
     processingStatus: "pending" | "processing" | "completed" | "failed";
     processingError?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     visibility: "private" | "organization" | "public";
     // Advanced sharing
     sharedWithUsers?: IUserShare[]; // Users with specific permissions

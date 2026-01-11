@@ -11,7 +11,7 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 export async function storeInVectorDB(
   documentId: string,
   text: string,
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 ) {
   // Split text into chunks
   const chunks = await textSplitter.splitText(text);
@@ -38,13 +38,13 @@ export async function searchVectorStore(
   query: string,
   userId: string,
   topK: number = 5,
-  filter?: Record<string, any>,
+  filter?: Record<string, unknown>,
   organizationIds?: string[]
 ) {
   const vectorStore = await getVectorStore();
 
   // Build filter: include user's personal documents and organization documents
-  const searchFilter: Record<string, any> = {
+  const searchFilter: Record<string, unknown> = {
     ...filter,
   };
 
@@ -66,7 +66,7 @@ export async function searchVectorStore(
 
   // Filter results by organization membership if needed
   if (organizationIds && organizationIds.length > 0) {
-    return results.filter((result: any) => {
+    return results.filter((result: { metadata: { userId?: string; organizationId?: string } }) => {
       // Personal document (userId matches, no orgId)
       if (result.metadata.userId === userId && !result.metadata.organizationId) {
         return true;

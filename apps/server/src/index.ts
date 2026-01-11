@@ -55,7 +55,7 @@ app.get("/api/files/:id", async (req, res) => {
     // Verify token
     let userId: string;
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
       userId = decoded.userId;
       console.log("Token verified for user:", userId);
     } catch (jwtError) {

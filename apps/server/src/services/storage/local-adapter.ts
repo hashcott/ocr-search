@@ -22,7 +22,7 @@ export class LocalAdapter implements StorageAdapter {
     }
   }
 
-  async upload(file: Buffer, filePath: string, contentType?: string): Promise<string> {
+  async upload(file: Buffer, filePath: string, _contentType?: string): Promise<string> {
     const fullPath = path.join(this.basePath, filePath);
     const dir = path.dirname(fullPath);
 

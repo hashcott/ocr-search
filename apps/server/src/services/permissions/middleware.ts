@@ -41,7 +41,7 @@ export async function authorize(
   userId: string,
   action: string,
   resource: string,
-  resourceData?: Record<string, any>
+  resourceData?: Record<string, unknown>
 ): Promise<void> {
   const ability = await getUserAbility(userId);
 
@@ -55,13 +55,13 @@ export async function authorize(
     // Create subject object that matches the conditions we defined
     // MongoAbility will match the subject object against the defined conditions
     const subject = {
-      __typename: resource,
+      __typename: resource as "Organization" | "Document" | "Chat" | "Member" | "Settings",
       organizationId: orgId,
     };
-    canAccess = ability.can(action as any, subject);
+    canAccess = ability.can(action as PermissionAction, subject);
   } else {
     // No conditions - check without conditions
-    canAccess = ability.can(action as any, resource as any);
+    canAccess = ability.can(action as PermissionAction, resource as "Organization" | "Document" | "Chat" | "Member" | "Settings" | "all");
   }
 
   if (!canAccess) {
@@ -131,13 +131,22 @@ export async function getUserOrganizations(userId: string): Promise<string[]> {
 /**
  * Get document access context (organization membership info)
  */
+interface MembershipLean {
+  _id: string;
+  userId: string;
+  organizationId: string;
+  role: string;
+  status: string;
+  customPermissions?: unknown;
+}
+
 export async function getDocumentAccessContext(
   userId: string,
   document: IDocument
 ): Promise<{
   isPersonal: boolean;
   organizationId: string | null;
-  membership: any | null;
+  membership: MembershipLean | null;
   isOwner: boolean;
 }> {
   const isPersonal = !document.organizationId;

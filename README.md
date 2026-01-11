@@ -85,6 +85,26 @@ docker-compose logs -f
 docker-compose down
 ```
 
+### Production Deployment with Pre-built Images
+
+Use the pre-built Docker images from GitHub Container Registry:
+
+```bash
+# Set required environment variables
+export GITHUB_OWNER=hashcott
+export FILEAI_VERSION=v1.0.0
+export JWT_SECRET=your-super-secret-jwt-key
+
+# Deploy with production compose file
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+Available images:
+- `ghcr.io/hashcott/fileai/server:latest` - Backend API server
+- `ghcr.io/hashcott/fileai/web:latest` - Frontend web application
+
+Images are built for both `linux/amd64` and `linux/arm64` platforms.
+
 ## Project Structure
 
 ```
@@ -172,6 +192,39 @@ npm run type-check
 # Clean build artifacts
 npm run clean
 ```
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration and deployment.
+
+### Workflows
+
+| Workflow | Trigger | Description |
+|----------|---------|-------------|
+| **CI** | Push/PR to `main`, `develop` | Runs linting, type-check, build, and Docker build tests |
+| **Docker Build & Release** | Push tag `v*.*.*` or manual | Builds and pushes Docker images to ghcr.io |
+
+### Creating a Release
+
+```bash
+# Create and push a new version tag
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+This will automatically:
+1. Build Docker images for `server` and `web`
+2. Push images to GitHub Container Registry (ghcr.io)
+3. Create a GitHub Release with release notes
+
+### Manual Docker Build
+
+You can also trigger a Docker build manually:
+
+1. Go to **Actions** → **Build and Release Docker Images**
+2. Click **Run workflow**
+3. Enter a custom tag (default: `latest`)
+4. Click **Run workflow**
 
 ## Extending FileAI
 

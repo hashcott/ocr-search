@@ -1,8 +1,8 @@
-import { FileProcessor, ProcessedDocument } from "@fileai/shared";
-import pdf from "pdf-parse";
+import { FileProcessor, ProcessedDocument } from '@fileai/shared';
+import pdf from 'pdf-parse';
 
 export class PDFProcessor implements FileProcessor {
-  supportedTypes = ["application/pdf"];
+  supportedTypes = ['application/pdf'];
 
   async process(file: Buffer, _filename: string): Promise<ProcessedDocument> {
     try {
@@ -18,7 +18,7 @@ export class PDFProcessor implements FileProcessor {
         },
       };
     } catch (error) {
-      console.error("PDF parsing error:", error);
+      console.error('PDF parsing error:', error);
 
       // TODO: Fallback to OCR with Ollama or Deepseek
       // For now, throw the error
@@ -30,7 +30,6 @@ export class PDFProcessor implements FileProcessor {
   private async processWithOCR(_file: Buffer): Promise<ProcessedDocument> {
     // This would call Ollama OCR or Deepseek OCR API
     // For now, return empty
-    throw new Error("OCR not implemented yet");
+    throw new Error('OCR not implemented yet');
   }
 }
-

@@ -1,10 +1,10 @@
-import { router } from "../trpc";
-import { authRouter } from "./auth";
-import { documentRouter } from "./document";
-import { searchRouter } from "./search";
-import { configRouter } from "./config";
-import { chatRouter } from "./chat";
-import { organizationRouter } from "./organization";
+import { router } from '../trpc';
+import { authRouter } from './auth';
+import { documentRouter } from './document';
+import { searchRouter } from './search';
+import { configRouter } from './config';
+import { chatRouter } from './chat';
+import { organizationRouter } from './organization';
 
 export const appRouter = router({
   auth: authRouter,
@@ -16,4 +16,3 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
-

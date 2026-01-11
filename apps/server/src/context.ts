@@ -1,14 +1,14 @@
-import { CreateExpressContextOptions } from "@trpc/server/adapters/express";
-import jwt from "jsonwebtoken";
-import { Context } from "./trpc";
-import { JWT_SECRET } from "./config/jwt";
+import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
+import jwt from 'jsonwebtoken';
+import { Context } from './trpc';
+import { JWT_SECRET } from './config/jwt';
 
 export async function createContext({
   req,
   res: _res,
 }: CreateExpressContextOptions): Promise<Context> {
   // Get token from authorization header
-  const token = req.headers.authorization?.split(" ")[1];
+  const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
     return {};
@@ -30,4 +30,3 @@ export async function createContext({
     return {};
   }
 }
-

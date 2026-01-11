@@ -1,7 +1,7 @@
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { getVectorStore } from "./vector";
-import { CHUNK_SIZE, CHUNK_OVERLAP } from "@fileai/shared";
-import { randomUUID } from "crypto";
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { getVectorStore } from './vector';
+import { CHUNK_SIZE, CHUNK_OVERLAP } from '@fileai/shared';
+import { randomUUID } from 'crypto';
 
 const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: CHUNK_SIZE,
@@ -66,17 +66,22 @@ export async function searchVectorStore(
 
   // Filter results by organization membership if needed
   if (organizationIds && organizationIds.length > 0) {
-    return results.filter((result: { metadata: { userId?: string; organizationId?: string } }) => {
-      // Personal document (userId matches, no orgId)
-      if (result.metadata.userId === userId && !result.metadata.organizationId) {
-        return true;
-      }
-      // Organization document (orgId in user's organizations)
-      if (result.metadata.organizationId && organizationIds.includes(result.metadata.organizationId)) {
-        return true;
-      }
-      return false;
-    }).slice(0, topK);
+    return results
+      .filter((result: { metadata: { userId?: string; organizationId?: string } }) => {
+        // Personal document (userId matches, no orgId)
+        if (result.metadata.userId === userId && !result.metadata.organizationId) {
+          return true;
+        }
+        // Organization document (orgId in user's organizations)
+        if (
+          result.metadata.organizationId &&
+          organizationIds.includes(result.metadata.organizationId)
+        ) {
+          return true;
+        }
+        return false;
+      })
+      .slice(0, topK);
   }
 
   return results;
@@ -89,7 +94,7 @@ export async function deleteFromVectorDB(documentId: string) {
   // Note: We search with an empty query but filter by documentId
   // This requires the vector store to support metadata filtering
   try {
-    const results = await vectorStore.search("", 1000, { documentId });
+    const results = await vectorStore.search('', 1000, { documentId });
 
     const chunkIds = results.map((r) => r.id);
 
@@ -102,4 +107,3 @@ export async function deleteFromVectorDB(documentId: string) {
     // Don't throw - document can still be deleted even if vector cleanup fails
   }
 }
-

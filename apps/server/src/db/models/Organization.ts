@@ -1,7 +1,7 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document } from 'mongoose';
 
 // Organization types
-export type OrganizationType = "company" | "school" | "team" | "personal";
+export type OrganizationType = 'company' | 'school' | 'team' | 'personal';
 
 export interface IOrganization extends Document {
   name: string;
@@ -36,8 +36,8 @@ const OrganizationSchema = new Schema<IOrganization>(
     },
     type: {
       type: String,
-      enum: ["company", "school", "team", "personal"],
-      default: "team",
+      enum: ['company', 'school', 'team', 'personal'],
+      default: 'team',
     },
     description: {
       type: String,
@@ -53,7 +53,7 @@ const OrganizationSchema = new Schema<IOrganization>(
       },
       defaultMemberRole: {
         type: String,
-        default: "member",
+        default: 'member',
       },
       maxStorageBytes: {
         type: Number,
@@ -66,7 +66,7 @@ const OrganizationSchema = new Schema<IOrganization>(
     },
     ownerId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
   },
@@ -78,8 +78,4 @@ const OrganizationSchema = new Schema<IOrganization>(
 // Indexes (slug index is created automatically via unique: true)
 OrganizationSchema.index({ ownerId: 1 });
 
-export const Organization = mongoose.model<IOrganization>(
-  "Organization",
-  OrganizationSchema
-);
-
+export const Organization = mongoose.model<IOrganization>('Organization', OrganizationSchema);

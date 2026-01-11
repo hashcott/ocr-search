@@ -1,10 +1,10 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
   email: string;
   password: string;
   name?: string;
-  role: "admin" | "user";
+  role: 'admin' | 'user';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,8 +28,8 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["admin", "user"],
-      default: "user",
+      enum: ['admin', 'user'],
+      default: 'user',
     },
   },
   {
@@ -39,5 +39,4 @@ const UserSchema = new Schema<IUser>(
 
 // Note: email already has unique: true which creates an index
 
-export const User = mongoose.model<IUser>("User", UserSchema);
-
+export const User = mongoose.model<IUser>('User', UserSchema);

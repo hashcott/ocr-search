@@ -1,531 +1,488 @@
-import { router, protectedProcedure } from "../trpc";
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { Organization } from "../db/models/Organization";
-import { Membership, ROLE_HIERARCHY } from "../db/models/Membership";
-import { User } from "../db/models/User";
-import { getUserAbility, authorize } from "../services/permissions";
+import { router, protectedProcedure } from '../trpc';
+import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
+import { Organization } from '../db/models/Organization';
+import { Membership, ROLE_HIERARCHY } from '../db/models/Membership';
+import { User } from '../db/models/User';
+import { getUserAbility, authorize } from '../services/permissions';
 
 // Input schemas
 const CreateOrganizationSchema = z.object({
-    name: z.string().min(2).max(100),
-    slug: z
-        .string()
-        .min(2)
-        .max(50)
-        .regex(/^[a-z0-9-]+$/),
-    type: z.enum(["company", "school", "team", "personal"]).default("team"),
-    description: z.string().max(500).optional(),
+  name: z.string().min(2).max(100),
+  slug: z
+    .string()
+    .min(2)
+    .max(50)
+    .regex(/^[a-z0-9-]+$/),
+  type: z.enum(['company', 'school', 'team', 'personal']).default('team'),
+  description: z.string().max(500).optional(),
 });
 
 const UpdateOrganizationSchema = z.object({
-    id: z.string(),
-    name: z.string().min(2).max(100).optional(),
-    description: z.string().max(500).optional(),
-    settings: z
-        .object({
-            allowPublicDocuments: z.boolean().optional(),
-            defaultMemberRole: z.string().optional(),
-            maxStorageBytes: z.number().optional(),
-            maxDocuments: z.number().optional(),
-        })
-        .optional(),
+  id: z.string(),
+  name: z.string().min(2).max(100).optional(),
+  description: z.string().max(500).optional(),
+  settings: z
+    .object({
+      allowPublicDocuments: z.boolean().optional(),
+      defaultMemberRole: z.string().optional(),
+      maxStorageBytes: z.number().optional(),
+      maxDocuments: z.number().optional(),
+    })
+    .optional(),
 });
 
 const InviteMemberSchema = z.object({
-    organizationId: z.string(),
-    email: z.string().email(),
-    role: z
-        .enum(["admin", "editor", "member", "viewer", "guest"])
-        .default("member"),
+  organizationId: z.string(),
+  email: z.string().email(),
+  role: z.enum(['admin', 'editor', 'member', 'viewer', 'guest']).default('member'),
 });
 
 const UpdateMemberRoleSchema = z.object({
-    organizationId: z.string(),
-    userId: z.string(),
-    role: z.enum(["admin", "editor", "member", "viewer", "guest"]),
+  organizationId: z.string(),
+  userId: z.string(),
+  role: z.enum(['admin', 'editor', 'member', 'viewer', 'guest']),
 });
 
 const SetCustomPermissionsSchema = z.object({
-    organizationId: z.string(),
-    userId: z.string(),
-    customPermissions: z.array(
-        z.object({
-            resource: z.enum([
-                "all",
-                "organization",
-                "document",
-                "chat",
-                "member",
-                "settings",
-            ]),
-            actions: z.array(
-                z.enum([
-                    "manage",
-                    "create",
-                    "read",
-                    "update",
-                    "delete",
-                    "share",
-                    "export",
-                    "invite",
-                ])
-            ),
-        })
-    ),
+  organizationId: z.string(),
+  userId: z.string(),
+  customPermissions: z.array(
+    z.object({
+      resource: z.enum(['all', 'organization', 'document', 'chat', 'member', 'settings']),
+      actions: z.array(
+        z.enum(['manage', 'create', 'read', 'update', 'delete', 'share', 'export', 'invite'])
+      ),
+    })
+  ),
 });
 
 export const organizationRouter = router({
-    // Create a new organization
-    create: protectedProcedure
-        .input(CreateOrganizationSchema)
-        .mutation(async ({ input, ctx }) => {
-            // Check if slug is available
-            const existing = await Organization.findOne({ slug: input.slug });
-            if (existing) {
-                throw new TRPCError({
-                    code: "CONFLICT",
-                    message: "Organization slug already exists",
-                });
-            }
+  // Create a new organization
+  create: protectedProcedure.input(CreateOrganizationSchema).mutation(async ({ input, ctx }) => {
+    // Check if slug is available
+    const existing = await Organization.findOne({ slug: input.slug });
+    if (existing) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'Organization slug already exists',
+      });
+    }
 
-            // Create organization
-            const organization = await Organization.create({
-                ...input,
-                ownerId: ctx.userId,
-            });
+    // Create organization
+    const organization = await Organization.create({
+      ...input,
+      ownerId: ctx.userId,
+    });
 
-            // Create owner membership
-            await Membership.create({
-                userId: ctx.userId,
-                organizationId: organization._id,
-                role: "owner",
-                status: "active",
-                joinedAt: new Date(),
-            });
+    // Create owner membership
+    await Membership.create({
+      userId: ctx.userId,
+      organizationId: organization._id,
+      role: 'owner',
+      status: 'active',
+      joinedAt: new Date(),
+    });
 
-            return {
-                id: organization._id.toString(),
-                name: organization.name,
-                slug: organization.slug,
-                type: organization.type,
-            };
+    return {
+      id: organization._id.toString(),
+      name: organization.name,
+      slug: organization.slug,
+      type: organization.type,
+    };
+  }),
+
+  // List user's organizations
+  list: protectedProcedure.query(async ({ ctx }) => {
+    const memberships = await Membership.find({
+      userId: ctx.userId,
+      status: 'active',
+    }).populate<{ organizationId: typeof Organization.prototype }>('organizationId');
+
+    return memberships.map((m) => {
+      const org = m.organizationId as typeof Organization.prototype;
+      return {
+        id: org._id.toString(),
+        name: org.name,
+        slug: org.slug,
+        type: org.type,
+        logo: org.logo,
+        role: m.role,
+        joinedAt: m.joinedAt,
+      };
+    });
+  }),
+
+  // Get organization details
+  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
+    const organization = await Organization.findById(input.id);
+    if (!organization) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    // Check membership
+    const membership = await Membership.findOne({
+      userId: ctx.userId,
+      organizationId: input.id,
+      status: 'active',
+    });
+
+    if (!membership) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Not a member of this organization',
+      });
+    }
+
+    // Get user's permissions
+    const ability = await getUserAbility(ctx.userId!);
+    const orgId = String(input.id);
+    const orgSubject = {
+      __typename: 'Organization' as const,
+      organizationId: orgId,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const canManage = ability.can('manage', orgSubject as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const canUpdate = ability.can('update', orgSubject as any);
+
+    return {
+      id: organization._id.toString(),
+      name: organization.name,
+      slug: organization.slug,
+      type: organization.type,
+      description: organization.description,
+      logo: organization.logo,
+      settings: organization.settings,
+      isOwner: organization.ownerId.toString() === ctx.userId,
+      role: membership.role,
+      permissions: {
+        canManage,
+        canUpdate,
+      },
+      createdAt: organization.createdAt,
+    };
+  }),
+
+  // Update organization
+  update: protectedProcedure.input(UpdateOrganizationSchema).mutation(async ({ input, ctx }) => {
+    await authorize(ctx.userId!, 'update', 'Organization', {
+      organizationId: input.id,
+    });
+
+    const organization = await Organization.findByIdAndUpdate(
+      input.id,
+      {
+        ...(input.name && { name: input.name }),
+        ...(input.description !== undefined && {
+          description: input.description,
         }),
+        ...(input.settings && { settings: { ...input.settings } }),
+      },
+      { new: true }
+    );
 
-    // List user's organizations
-    list: protectedProcedure.query(async ({ ctx }) => {
-        const memberships = await Membership.find({
-            userId: ctx.userId,
-            status: "active",
-        }).populate<{ organizationId: typeof Organization.prototype }>(
-            "organizationId"
-        );
+    if (!organization) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
 
-        return memberships.map((m) => {
-            const org = m.organizationId as typeof Organization.prototype;
-            return {
-                id: org._id.toString(),
-                name: org.name,
-                slug: org.slug,
-                type: org.type,
-                logo: org.logo,
-                role: m.role,
-                joinedAt: m.joinedAt,
-            };
+    return {
+      id: organization._id.toString(),
+      name: organization.name,
+      updated: true,
+    };
+  }),
+
+  // Delete organization (owner only)
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const organization = await Organization.findById(input.id);
+      if (!organization) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Organization not found',
         });
+      }
+
+      if (organization.ownerId.toString() !== ctx.userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only the owner can delete the organization',
+        });
+      }
+
+      // Delete all memberships
+      await Membership.deleteMany({ organizationId: input.id });
+
+      // Delete organization
+      await organization.deleteOne();
+
+      return { success: true };
     }),
 
-    // Get organization details
-    getById: protectedProcedure
-        .input(z.object({ id: z.string() }))
-        .query(async ({ input, ctx }) => {
-            const organization = await Organization.findById(input.id);
-            if (!organization) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Organization not found",
-                });
-            }
+  // List organization members
+  listMembers: protectedProcedure
+    .input(z.object({ organizationId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      await authorize(ctx.userId!, 'read', 'Member', {
+        organizationId: input.organizationId,
+      });
 
-            // Check membership
-            const membership = await Membership.findOne({
-                userId: ctx.userId,
-                organizationId: input.id,
-                status: "active",
-            });
+      const memberships = await Membership.find({
+        organizationId: input.organizationId,
+      }).populate<{ userId: typeof User.prototype }>('userId', 'name email');
 
-            if (!membership) {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "Not a member of this organization",
-                });
-            }
+      return memberships.map((m) => {
+        const user = m.userId as typeof User.prototype;
+        return {
+          id: m._id.toString(),
+          userId: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: m.role,
+          status: m.status,
+          customPermissions: m.customPermissions,
+          joinedAt: m.joinedAt,
+          invitedAt: m.invitedAt,
+        };
+      });
+    }),
 
-            // Get user's permissions
-            const ability = await getUserAbility(ctx.userId!);
-            const orgId = String(input.id);
-            const orgSubject = {
-                __typename: "Organization" as const,
-                organizationId: orgId,
-            };
-            const canManage = ability.can("manage", orgSubject);
-            const canUpdate = ability.can("update", orgSubject);
+  // Invite member
+  inviteMember: protectedProcedure.input(InviteMemberSchema).mutation(async ({ input, ctx }) => {
+    await authorize(ctx.userId!, 'invite', 'Member', {
+      organizationId: input.organizationId,
+    });
 
-            return {
-                id: organization._id.toString(),
-                name: organization.name,
-                slug: organization.slug,
-                type: organization.type,
-                description: organization.description,
-                logo: organization.logo,
-                settings: organization.settings,
-                isOwner: organization.ownerId.toString() === ctx.userId,
-                role: membership.role,
-                permissions: {
-                    canManage,
-                    canUpdate,
-                },
-                createdAt: organization.createdAt,
-            };
-        }),
+    // Check if user exists
+    const user = await User.findOne({ email: input.email });
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'User not found with this email',
+      });
+    }
 
-    // Update organization
-    update: protectedProcedure
-        .input(UpdateOrganizationSchema)
-        .mutation(async ({ input, ctx }) => {
-            await authorize(ctx.userId!, "update", "Organization", {
-                organizationId: input.id,
-            });
+    // Check if already a member
+    const existing = await Membership.findOne({
+      userId: user._id,
+      organizationId: input.organizationId,
+    });
 
-            const organization = await Organization.findByIdAndUpdate(
-                input.id,
-                {
-                    ...(input.name && { name: input.name }),
-                    ...(input.description !== undefined && {
-                        description: input.description,
-                    }),
-                    ...(input.settings && { settings: { ...input.settings } }),
-                },
-                { new: true }
-            );
+    if (existing) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'User is already a member',
+      });
+    }
 
-            if (!organization) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Organization not found",
-                });
-            }
+    // Create membership
+    const membership = await Membership.create({
+      userId: user._id,
+      organizationId: input.organizationId,
+      role: input.role,
+      invitedBy: ctx.userId,
+      invitedAt: new Date(),
+      status: 'active', // Auto-accept for now
+      joinedAt: new Date(),
+    });
 
-            return {
-                id: organization._id.toString(),
-                name: organization.name,
-                updated: true,
-            };
-        }),
+    return {
+      id: membership._id.toString(),
+      userId: user._id.toString(),
+      email: user.email,
+      role: membership.role,
+    };
+  }),
 
-    // Delete organization (owner only)
-    delete: protectedProcedure
-        .input(z.object({ id: z.string() }))
-        .mutation(async ({ input, ctx }) => {
-            const organization = await Organization.findById(input.id);
-            if (!organization) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Organization not found",
-                });
-            }
+  // Update member role
+  updateMemberRole: protectedProcedure
+    .input(UpdateMemberRoleSchema)
+    .mutation(async ({ input, ctx }) => {
+      await authorize(ctx.userId!, 'update', 'Member', {
+        organizationId: input.organizationId,
+      });
 
-            if (organization.ownerId.toString() !== ctx.userId) {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "Only the owner can delete the organization",
-                });
-            }
+      // Get current user's membership
+      const currentMembership = await Membership.findOne({
+        userId: ctx.userId,
+        organizationId: input.organizationId,
+        status: 'active',
+      });
 
-            // Delete all memberships
-            await Membership.deleteMany({ organizationId: input.id });
+      if (!currentMembership) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Not a member',
+        });
+      }
 
-            // Delete organization
-            await organization.deleteOne();
+      // Get target membership
+      const targetMembership = await Membership.findOne({
+        userId: input.userId,
+        organizationId: input.organizationId,
+      });
 
-            return { success: true };
-        }),
+      if (!targetMembership) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Member not found',
+        });
+      }
 
-    // List organization members
-    listMembers: protectedProcedure
-        .input(z.object({ organizationId: z.string() }))
-        .query(async ({ input, ctx }) => {
-            await authorize(ctx.userId!, "read", "Member", {
-                organizationId: input.organizationId,
-            });
+      // Check hierarchy - can't change role of someone with higher rank
+      if (ROLE_HIERARCHY[targetMembership.role] >= ROLE_HIERARCHY[currentMembership.role]) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Cannot modify role of member with equal or higher rank',
+        });
+      }
 
-            const memberships = await Membership.find({
-                organizationId: input.organizationId,
-            }).populate<{ userId: typeof User.prototype }>(
-                "userId",
-                "name email"
-            );
+      // Can't assign a role higher than your own
+      if (ROLE_HIERARCHY[input.role] >= ROLE_HIERARCHY[currentMembership.role]) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Cannot assign a role equal to or higher than your own',
+        });
+      }
 
-            return memberships.map((m) => {
-                const user = m.userId as typeof User.prototype;
-                return {
-                    id: m._id.toString(),
-                    userId: user._id.toString(),
-                    name: user.name,
-                    email: user.email,
-                    role: m.role,
-                    status: m.status,
-                    customPermissions: m.customPermissions,
-                    joinedAt: m.joinedAt,
-                    invitedAt: m.invitedAt,
-                };
-            });
-        }),
+      targetMembership.role = input.role;
+      await targetMembership.save();
 
-    // Invite member
-    inviteMember: protectedProcedure
-        .input(InviteMemberSchema)
-        .mutation(async ({ input, ctx }) => {
-            await authorize(ctx.userId!, "invite", "Member", {
-                organizationId: input.organizationId,
-            });
+      return { success: true, newRole: input.role };
+    }),
 
-            // Check if user exists
-            const user = await User.findOne({ email: input.email });
-            if (!user) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "User not found with this email",
-                });
-            }
+  // Set custom permissions for a member
+  setCustomPermissions: protectedProcedure
+    .input(SetCustomPermissionsSchema)
+    .mutation(async ({ input, ctx }) => {
+      await authorize(ctx.userId!, 'manage', 'Member', {
+        organizationId: input.organizationId,
+      });
 
-            // Check if already a member
-            const existing = await Membership.findOne({
-                userId: user._id,
-                organizationId: input.organizationId,
-            });
+      const membership = await Membership.findOne({
+        userId: input.userId,
+        organizationId: input.organizationId,
+      });
 
-            if (existing) {
-                throw new TRPCError({
-                    code: "CONFLICT",
-                    message: "User is already a member",
-                });
-            }
+      if (!membership) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Member not found',
+        });
+      }
 
-            // Create membership
-            const membership = await Membership.create({
-                userId: user._id,
-                organizationId: input.organizationId,
-                role: input.role,
-                invitedBy: ctx.userId,
-                invitedAt: new Date(),
-                status: "active", // Auto-accept for now
-                joinedAt: new Date(),
-            });
+      membership.customPermissions = input.customPermissions as typeof membership.customPermissions;
+      await membership.save();
 
-            return {
-                id: membership._id.toString(),
-                userId: user._id.toString(),
-                email: user.email,
-                role: membership.role,
-            };
-        }),
+      return { success: true };
+    }),
 
-    // Update member role
-    updateMemberRole: protectedProcedure
-        .input(UpdateMemberRoleSchema)
-        .mutation(async ({ input, ctx }) => {
-            await authorize(ctx.userId!, "update", "Member", {
-                organizationId: input.organizationId,
-            });
+  // Remove member
+  removeMember: protectedProcedure
+    .input(z.object({ organizationId: z.string(), userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await authorize(ctx.userId!, 'delete', 'Member', {
+        organizationId: input.organizationId,
+      });
 
-            // Get current user's membership
-            const currentMembership = await Membership.findOne({
-                userId: ctx.userId,
-                organizationId: input.organizationId,
-                status: "active",
-            });
+      const membership = await Membership.findOne({
+        userId: input.userId,
+        organizationId: input.organizationId,
+      });
 
-            if (!currentMembership) {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "Not a member",
-                });
-            }
+      if (!membership) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Member not found',
+        });
+      }
 
-            // Get target membership
-            const targetMembership = await Membership.findOne({
-                userId: input.userId,
-                organizationId: input.organizationId,
-            });
+      // Can't remove owner
+      if (membership.role === 'owner') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Cannot remove the owner',
+        });
+      }
 
-            if (!targetMembership) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Member not found",
-                });
-            }
+      await membership.deleteOne();
 
-            // Check hierarchy - can't change role of someone with higher rank
-            if (
-                ROLE_HIERARCHY[targetMembership.role] >=
-                ROLE_HIERARCHY[currentMembership.role]
-            ) {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message:
-                        "Cannot modify role of member with equal or higher rank",
-                });
-            }
+      return { success: true };
+    }),
 
-            // Can't assign a role higher than your own
-            if (
-                ROLE_HIERARCHY[input.role] >=
-                ROLE_HIERARCHY[currentMembership.role]
-            ) {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message:
-                        "Cannot assign a role equal to or higher than your own",
-                });
-            }
+  // Leave organization
+  leave: protectedProcedure
+    .input(z.object({ organizationId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const membership = await Membership.findOne({
+        userId: ctx.userId,
+        organizationId: input.organizationId,
+      });
 
-            targetMembership.role = input.role;
-            await targetMembership.save();
+      if (!membership) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Not a member',
+        });
+      }
 
-            return { success: true, newRole: input.role };
-        }),
+      // Owner can't leave - must transfer ownership first
+      if (membership.role === 'owner') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Owner cannot leave. Transfer ownership first.',
+        });
+      }
 
-    // Set custom permissions for a member
-    setCustomPermissions: protectedProcedure
-        .input(SetCustomPermissionsSchema)
-        .mutation(async ({ input, ctx }) => {
-            await authorize(ctx.userId!, "manage", "Member", {
-                organizationId: input.organizationId,
-            });
+      await membership.deleteOne();
 
-            const membership = await Membership.findOne({
-                userId: input.userId,
-                organizationId: input.organizationId,
-            });
+      return { success: true };
+    }),
 
-            if (!membership) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Member not found",
-                });
-            }
+  // Get my permissions in an organization
+  getMyPermissions: protectedProcedure
+    .input(z.object({ organizationId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const ability = await getUserAbility(ctx.userId!);
 
-            membership.customPermissions =
-                input.customPermissions as typeof membership.customPermissions;
-            await membership.save();
+      const resources = ['Organization', 'Document', 'Chat', 'Member', 'Settings'] as const;
+      const actions = [
+        'manage',
+        'create',
+        'read',
+        'update',
+        'delete',
+        'share',
+        'export',
+        'invite',
+      ] as const;
 
-            return { success: true };
-        }),
+      const permissions: Record<string, string[]> = {};
 
-    // Remove member
-    removeMember: protectedProcedure
-        .input(z.object({ organizationId: z.string(), userId: z.string() }))
-        .mutation(async ({ input, ctx }) => {
-            await authorize(ctx.userId!, "delete", "Member", {
-                organizationId: input.organizationId,
-            });
+      for (const resource of resources) {
+        const allowed: string[] = [];
+        const orgId = String(input.organizationId);
+        const subject = {
+          __typename: resource,
+          organizationId: orgId,
+        };
+        for (const action of actions) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (ability.can(action, subject as any)) {
+            allowed.push(action);
+          }
+        }
+        permissions[resource] = allowed;
+      }
 
-            const membership = await Membership.findOne({
-                userId: input.userId,
-                organizationId: input.organizationId,
-            });
-
-            if (!membership) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Member not found",
-                });
-            }
-
-            // Can't remove owner
-            if (membership.role === "owner") {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "Cannot remove the owner",
-                });
-            }
-
-            await membership.deleteOne();
-
-            return { success: true };
-        }),
-
-    // Leave organization
-    leave: protectedProcedure
-        .input(z.object({ organizationId: z.string() }))
-        .mutation(async ({ input, ctx }) => {
-            const membership = await Membership.findOne({
-                userId: ctx.userId,
-                organizationId: input.organizationId,
-            });
-
-            if (!membership) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Not a member",
-                });
-            }
-
-            // Owner can't leave - must transfer ownership first
-            if (membership.role === "owner") {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "Owner cannot leave. Transfer ownership first.",
-                });
-            }
-
-            await membership.deleteOne();
-
-            return { success: true };
-        }),
-
-    // Get my permissions in an organization
-    getMyPermissions: protectedProcedure
-        .input(z.object({ organizationId: z.string() }))
-        .query(async ({ input, ctx }) => {
-            const ability = await getUserAbility(ctx.userId!);
-
-            const resources = [
-                "Organization",
-                "Document",
-                "Chat",
-                "Member",
-                "Settings",
-            ] as const;
-            const actions = [
-                "manage",
-                "create",
-                "read",
-                "update",
-                "delete",
-                "share",
-                "export",
-                "invite",
-            ] as const;
-
-            const permissions: Record<string, string[]> = {};
-
-            for (const resource of resources) {
-                const allowed: string[] = [];
-                const orgId = String(input.organizationId);
-                const subject = {
-                    __typename: resource,
-                    organizationId: orgId,
-                };
-                for (const action of actions) {
-                    if (ability.can(action, subject)) {
-                        allowed.push(action);
-                    }
-                }
-                permissions[resource] = allowed;
-            }
-
-            return permissions;
-        }),
+      return permissions;
+    }),
 });

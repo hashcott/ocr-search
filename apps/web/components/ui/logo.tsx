@@ -1,16 +1,16 @@
 interface LogoProps {
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
   className?: string;
 }
 
 const sizes = {
-  sm: { icon: 32, text: "text-lg" },
-  md: { icon: 40, text: "text-xl" },
-  lg: { icon: 48, text: "text-2xl" },
+  sm: { icon: 32, text: 'text-lg' },
+  md: { icon: 40, text: 'text-xl' },
+  lg: { icon: 48, text: 'text-2xl' },
 };
 
-export function Logo({ size = "md", showText = true, className = "" }: LogoProps) {
+export function Logo({ size = 'md', showText = true, className = '' }: LogoProps) {
   const { icon, text } = sizes[size];
 
   return (
@@ -35,35 +35,17 @@ export function Logo({ size = "md", showText = true, className = "" }: LogoProps
           fill="white"
           opacity="0.95"
         />
-        <path
-          d="M18 6v5h5"
-          fill="none"
-          stroke="white"
-          strokeWidth="1"
-          opacity="0.5"
-        />
-        <path
-          d="M10 14h8M10 18h6"
-          stroke="#059669"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
+        <path d="M18 6v5h5" fill="none" stroke="white" strokeWidth="1" opacity="0.5" />
+        <path d="M10 14h8M10 18h6" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" />
         <circle cx="24" cy="24" r="6" fill="white" />
-        <path
-          d="M24 21v6M21 24h6"
-          stroke="#10b981"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
+        <path d="M24 21v6M21 24h6" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
-      {showText && (
-        <span className={`font-semibold tracking-tight ${text}`}>FileAI</span>
-      )}
+      {showText && <span className={`font-semibold tracking-tight ${text}`}>FileAI</span>}
     </div>
   );
 }
 
-export function LogoIcon({ size = 36, className = "" }: { size?: number; className?: string }) {
+export function LogoIcon({ size = 36, className = '' }: { size?: number; className?: string }) {
   return (
     <svg
       width={size}
@@ -85,26 +67,10 @@ export function LogoIcon({ size = 36, className = "" }: { size?: number; classNa
         fill="white"
         opacity="0.95"
       />
-      <path
-        d="M18 6v5h5"
-        fill="none"
-        stroke="white"
-        strokeWidth="1"
-        opacity="0.5"
-      />
-      <path
-        d="M10 14h8M10 18h6"
-        stroke="#059669"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+      <path d="M18 6v5h5" fill="none" stroke="white" strokeWidth="1" opacity="0.5" />
+      <path d="M10 14h8M10 18h6" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" />
       <circle cx="24" cy="24" r="6" fill="white" />
-      <path
-        d="M24 21v6M21 24h6"
-        stroke="#10b981"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+      <path d="M24 21v6M21 24h6" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }

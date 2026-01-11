@@ -1,27 +1,29 @@
-import js from "@eslint/js";
-import nextPlugin from "@next/eslint-plugin-next";
-import reactPlugin from "eslint-plugin-react";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
-import tseslint from "typescript-eslint";
-import globals from "globals";
+import js from '@eslint/js';
+import nextPlugin from '@next/eslint-plugin-next';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import tseslint from 'typescript-eslint';
+import globals from 'globals';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  eslintConfigPrettier,
   {
-    files: ["**/*.{js,jsx,ts,tsx}"],
+    files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
       react: reactPlugin,
-      "react-hooks": reactHooksPlugin,
-      "@next/next": nextPlugin,
+      'react-hooks': reactHooksPlugin,
+      '@next/next': nextPlugin,
     },
     languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
+      ecmaVersion: 'latest',
+      sourceType: 'module',
       globals: {
         ...globals.browser,
         ...globals.node,
-        React: "readonly",
+        React: 'readonly',
       },
       parserOptions: {
         ecmaFeatures: {
@@ -31,38 +33,33 @@ export default tseslint.config(
     },
     settings: {
       react: {
-        version: "detect",
+        version: 'detect',
       },
     },
     rules: {
       // React rules
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
-      "react/jsx-uses-react": "off",
-      "react/jsx-uses-vars": "error",
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'react/jsx-uses-react': 'off',
+      'react/jsx-uses-vars': 'error',
 
       // React Hooks rules
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
 
       // Next.js rules
-      "@next/next/no-html-link-for-pages": "error",
-      "@next/next/no-img-element": "warn",
+      '@next/next/no-html-link-for-pages': 'error',
+      '@next/next/no-img-element': 'warn',
 
       // TypeScript rules
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "@typescript-eslint/no-explicit-any": "warn",
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
 
       // Disable base rule in favor of TypeScript version
-      "no-unused-vars": "off",
+      'no-unused-vars': 'off',
     },
   },
   {
-    ignores: [
-      ".next/**",
-      "node_modules/**",
-      "out/**",
-      "public/**",
-    ],
-  },
+    ignores: ['.next/**', 'node_modules/**', 'out/**', 'public/**'],
+  }
 );

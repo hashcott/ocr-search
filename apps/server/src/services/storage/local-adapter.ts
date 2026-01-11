@@ -1,6 +1,6 @@
-import { StorageAdapter } from "@fileai/shared";
-import * as fs from "fs/promises";
-import * as path from "path";
+import { StorageAdapter } from '@fileai/shared';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 interface LocalConfig {
   localPath: string;
@@ -18,7 +18,7 @@ export class LocalAdapter implements StorageAdapter {
     try {
       await fs.mkdir(this.basePath, { recursive: true });
     } catch (error) {
-      console.error("Failed to create storage directory:", error);
+      console.error('Failed to create storage directory:', error);
     }
   }
 
@@ -51,4 +51,3 @@ export class LocalAdapter implements StorageAdapter {
     return `/uploads/${filePath}`;
   }
 }
-

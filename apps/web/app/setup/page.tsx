@@ -1,61 +1,67 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { CheckCircle } from "lucide-react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { trpc } from '@/lib/trpc/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { CheckCircle } from 'lucide-react';
 
 export default function SetupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [config, setConfig] = useState({
-    database: { url: "mongodb://localhost:27017/fileai" },
+    database: { url: 'mongodb://localhost:27017/fileai' },
     storage: {
-      type: "local" as "s3" | "local" | "minio",
+      type: 'local' as 's3' | 'local' | 'minio',
       config: {
-        localPath: "./uploads",
+        localPath: './uploads',
       },
     },
     vectorDB: {
-      type: "qdrant" as "qdrant" | "meilisearch" | "mongodb",
+      type: 'qdrant' as 'qdrant' | 'meilisearch' | 'mongodb',
       config: {
-        url: "http://localhost:6333",
-        collectionName: "documents",
+        url: 'http://localhost:6333',
+        collectionName: 'documents',
       },
     },
     llm: {
-      provider: "ollama" as "ollama" | "openai",
-      model: "llama3",
-      baseUrl: "http://localhost:11434",
+      provider: 'ollama' as 'ollama' | 'openai',
+      model: 'llama3',
+      baseUrl: 'http://localhost:11434',
       temperature: 0.7,
     },
     embedding: {
-      provider: "ollama" as "ollama" | "openai",
-      model: "nomic-embed-text",
-      baseUrl: "http://localhost:11434",
+      provider: 'ollama' as 'ollama' | 'openai',
+      model: 'nomic-embed-text',
+      baseUrl: 'http://localhost:11434',
     },
   });
 
   const saveMutation = trpc.config.save.useMutation({
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Configuration saved successfully",
+        title: 'Success',
+        description: 'Configuration saved successfully',
       });
-      router.push("/register");
+      router.push('/register');
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -66,59 +72,51 @@ export default function SetupPage() {
 
   const steps = [
     {
-      title: "Database",
-      description: "Configure MongoDB connection",
+      title: 'Database',
+      description: 'Configure MongoDB connection',
     },
     {
-      title: "Storage",
-      description: "Choose file storage method",
+      title: 'Storage',
+      description: 'Choose file storage method',
     },
     {
-      title: "Vector DB",
-      description: "Configure vector database",
+      title: 'Vector DB',
+      description: 'Configure vector database',
     },
     {
-      title: "LLM",
-      description: "Choose language model",
+      title: 'LLM',
+      description: 'Choose language model',
     },
     {
-      title: "Embeddings",
-      description: "Choose embedding model",
+      title: 'Embeddings',
+      description: 'Choose embedding model',
     },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome to FileAI
-          </h1>
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-4xl font-bold text-gray-900">Welcome to FileAI</h1>
           <p className="text-gray-600">Let&apos;s set up your system</p>
         </div>
 
         {/* Progress steps */}
-        <div className="flex justify-between mb-8">
+        <div className="mb-8 flex justify-between">
           {steps.map((step, index) => (
             <div
               key={index}
-              className="flex flex-col items-center flex-1"
+              className="flex flex-1 flex-col items-center"
               onClick={() => setCurrentStep(index)}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 cursor-pointer ${
-                  index <= currentStep
-                    ? "bg-primary text-white"
-                    : "bg-gray-300 text-gray-600"
+                className={`mb-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full ${
+                  index <= currentStep ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600'
                 }`}
               >
-                {index < currentStep ? (
-                  <CheckCircle className="h-5 w-5" />
-                ) : (
-                  index + 1
-                )}
+                {index < currentStep ? <CheckCircle className="h-5 w-5" /> : index + 1}
               </div>
-              <p className="text-xs text-center font-medium">{step.title}</p>
+              <p className="text-center text-xs font-medium">{step.title}</p>
             </div>
           ))}
         </div>
@@ -156,7 +154,7 @@ export default function SetupPage() {
                   <Label htmlFor="storageType">Storage Type</Label>
                   <Select
                     value={config.storage.type}
-                    onValueChange={(value: "s3" | "local" | "minio") =>
+                    onValueChange={(value: 's3' | 'local' | 'minio') =>
                       setConfig({
                         ...config,
                         storage: { ...config.storage, type: value },
@@ -174,7 +172,7 @@ export default function SetupPage() {
                   </Select>
                 </div>
 
-                {config.storage.type === "local" && (
+                {config.storage.type === 'local' && (
                   <div>
                     <Label htmlFor="localPath">Local Path</Label>
                     <Input
@@ -203,7 +201,7 @@ export default function SetupPage() {
                   <Label htmlFor="vectorType">Vector Database</Label>
                   <Select
                     value={config.vectorDB.type}
-                    onValueChange={(value: "qdrant" | "meilisearch" | "mongodb") =>
+                    onValueChange={(value: 'qdrant' | 'meilisearch' | 'mongodb') =>
                       setConfig({
                         ...config,
                         vectorDB: { ...config.vectorDB, type: value },
@@ -272,7 +270,7 @@ export default function SetupPage() {
                   <Label htmlFor="llmProvider">Provider</Label>
                   <Select
                     value={config.llm.provider}
-                    onValueChange={(value: "ollama" | "openai") =>
+                    onValueChange={(value: 'ollama' | 'openai') =>
                       setConfig({
                         ...config,
                         llm: { ...config.llm, provider: value },
@@ -301,14 +299,12 @@ export default function SetupPage() {
                       })
                     }
                     placeholder={
-                      config.llm.provider === "ollama"
-                        ? "llama3"
-                        : "gpt-4-turbo-preview"
+                      config.llm.provider === 'ollama' ? 'llama3' : 'gpt-4-turbo-preview'
                     }
                   />
                 </div>
 
-                {config.llm.provider === "ollama" && (
+                {config.llm.provider === 'ollama' && (
                   <div>
                     <Label htmlFor="llmBaseUrl">Base URL</Label>
                     <Input
@@ -334,7 +330,7 @@ export default function SetupPage() {
                   <Label htmlFor="embeddingProvider">Provider</Label>
                   <Select
                     value={config.embedding.provider}
-                    onValueChange={(value: "ollama" | "openai") =>
+                    onValueChange={(value: 'ollama' | 'openai') =>
                       setConfig({
                         ...config,
                         embedding: { ...config.embedding, provider: value },
@@ -363,14 +359,14 @@ export default function SetupPage() {
                       })
                     }
                     placeholder={
-                      config.embedding.provider === "ollama"
-                        ? "nomic-embed-text"
-                        : "text-embedding-3-small"
+                      config.embedding.provider === 'ollama'
+                        ? 'nomic-embed-text'
+                        : 'text-embedding-3-small'
                     }
                   />
                 </div>
 
-                {config.embedding.provider === "ollama" && (
+                {config.embedding.provider === 'ollama' && (
                   <div>
                     <Label htmlFor="embeddingBaseUrl">Base URL</Label>
                     <Input
@@ -394,7 +390,7 @@ export default function SetupPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-between mt-6">
+        <div className="mt-6 flex justify-between">
           <Button
             variant="outline"
             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
@@ -404,14 +400,10 @@ export default function SetupPage() {
           </Button>
           {currentStep === steps.length - 1 ? (
             <Button onClick={handleFinish} disabled={saveMutation.isLoading}>
-              {saveMutation.isLoading ? "Saving..." : "Finish Setup"}
+              {saveMutation.isLoading ? 'Saving...' : 'Finish Setup'}
             </Button>
           ) : (
-            <Button
-              onClick={() =>
-                setCurrentStep(Math.min(steps.length - 1, currentStep + 1))
-              }
-            >
+            <Button onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}>
               Next
             </Button>
           )}
@@ -420,4 +412,3 @@ export default function SetupPage() {
     </div>
   );
 }
-

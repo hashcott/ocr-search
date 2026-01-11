@@ -127,4 +127,3 @@ export const SearchQuerySchema = z.object({
   topK: z.number().min(1).max(50).optional().default(10),
   filter: z.record(z.any()).optional(),
 });
-

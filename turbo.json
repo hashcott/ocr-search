@@ -18,6 +18,10 @@
     "lint": {
       "outputs": []
     },
+    "format": {
+      "outputs": [],
+      "cache": false
+    },
     "type-check": {
       "outputs": []
     },
@@ -26,4 +30,3 @@
     }
   }
 }
-

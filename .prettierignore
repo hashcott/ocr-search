@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# Cache
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+
+# Uploads and generated files
+uploads/
+*.log
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Environment files
+.env*
+
+# Docker
+Dockerfile
+docker-compose*.yml
+
+# Coverage
+coverage/

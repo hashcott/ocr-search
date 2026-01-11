@@ -16,16 +16,16 @@ FileAI is a powerful open-source document management system that uses RAG (Retri
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
+| Feature                  | Description                                                               |
+| ------------------------ | ------------------------------------------------------------------------- |
 | **Multi-Format Support** | Process PDF, DOCX, DOC, XML, and TXT files with automatic text extraction |
-| **Semantic Search** | Find documents by meaning using vector embeddings and Qdrant |
-| **AI-Powered Q&A** | Get intelligent answers using RAG with Ollama or OpenAI |
-| **Flexible Storage** | Store files locally, on S3, or self-hosted MinIO |
-| **Secure by Default** | JWT authentication and role-based access control |
-| **Modern UI** | Beautiful interface built with Next.js 14 and shadcn/ui |
-| **Easy Setup** | One-time setup wizard for quick configuration |
-| **Extensible** | Plugin architecture for custom file processors and storage |
+| **Semantic Search**      | Find documents by meaning using vector embeddings and Qdrant              |
+| **AI-Powered Q&A**       | Get intelligent answers using RAG with Ollama or OpenAI                   |
+| **Flexible Storage**     | Store files locally, on S3, or self-hosted MinIO                          |
+| **Secure by Default**    | JWT authentication and role-based access control                          |
+| **Modern UI**            | Beautiful interface built with Next.js 14 and shadcn/ui                   |
+| **Easy Setup**           | One-time setup wizard for quick configuration                             |
+| **Extensible**           | Plugin architecture for custom file processors and storage                |
 
 ## Use Cases
 
@@ -36,14 +36,14 @@ FileAI is a powerful open-source document management system that uses RAG (Retri
 
 ## Tech Stack
 
-| Layer | Technologies |
-|-------|--------------|
+| Layer        | Technologies                                 |
+| ------------ | -------------------------------------------- |
 | **Frontend** | Next.js 14, React 19, TailwindCSS, shadcn/ui |
-| **Backend** | Node.js, Express, tRPC |
-| **AI/ML** | LangChain.js, Ollama, OpenAI |
-| **Database** | MongoDB (metadata), Qdrant (vectors) |
-| **Storage** | S3 / MinIO / Local filesystem |
-| **DevOps** | Docker, Docker Compose, Turborepo |
+| **Backend**  | Node.js, Express, tRPC                       |
+| **AI/ML**    | LangChain.js, Ollama, OpenAI                 |
+| **Database** | MongoDB (metadata), Qdrant (vectors)         |
+| **Storage**  | S3 / MinIO / Local filesystem                |
+| **DevOps**   | Docker, Docker Compose, Turborepo            |
 
 ## Quick Start
 
@@ -100,6 +100,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 Available images:
+
 - `ghcr.io/hashcott/fileai/server:latest` - Backend API server
 - `ghcr.io/hashcott/fileai/web:latest` - Frontend web application
 
@@ -158,18 +159,18 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/trpc
 
 ### Storage Options
 
-| Option | Description | Best For |
-|--------|-------------|----------|
+| Option  | Description      | Best For                       |
+| ------- | ---------------- | ------------------------------ |
 | `local` | Local filesystem | Development, small deployments |
-| `s3` | Amazon S3 | Production, cloud deployments |
-| `minio` | Self-hosted S3 | Self-hosted, data sovereignty |
+| `s3`    | Amazon S3        | Production, cloud deployments  |
+| `minio` | Self-hosted S3   | Self-hosted, data sovereignty  |
 
 ### LLM Options
 
-| Provider | Models | Notes |
-|----------|--------|-------|
-| Ollama | llama3, mistral, qwen, etc. | Free, runs locally |
-| OpenAI | gpt-4o, gpt-4-turbo, gpt-3.5-turbo | Paid, cloud-based |
+| Provider | Models                             | Notes              |
+| -------- | ---------------------------------- | ------------------ |
+| Ollama   | llama3, mistral, qwen, etc.        | Free, runs locally |
+| OpenAI   | gpt-4o, gpt-4-turbo, gpt-3.5-turbo | Paid, cloud-based  |
 
 ## Development
 
@@ -199,10 +200,10 @@ This project uses GitHub Actions for continuous integration and deployment.
 
 ### Workflows
 
-| Workflow | Trigger | Description |
-|----------|---------|-------------|
-| **CI** | Push/PR to `main`, `develop` | Runs linting, type-check, build, and Docker build tests |
-| **Docker Build & Release** | Push tag `v*.*.*` or manual | Builds and pushes Docker images to ghcr.io |
+| Workflow                   | Trigger                      | Description                                             |
+| -------------------------- | ---------------------------- | ------------------------------------------------------- |
+| **CI**                     | Push/PR to `main`, `develop` | Runs linting, type-check, build, and Docker build tests |
+| **Docker Build & Release** | Push tag `v*.*.*` or manual  | Builds and pushes Docker images to ghcr.io              |
 
 ### Creating a Release
 
@@ -213,6 +214,7 @@ git push origin v1.0.0
 ```
 
 This will automatically:
+
 1. Build Docker images for `server` and `web`
 2. Push images to GitHub Container Registry (ghcr.io)
 3. Create a GitHub Release with release notes
@@ -232,16 +234,16 @@ You can also trigger a Docker build manually:
 
 ```typescript
 // apps/server/src/services/processors/my-processor.ts
-import { FileProcessor, ProcessedDocument } from "@fileai/shared";
+import { FileProcessor, ProcessedDocument } from '@fileai/shared';
 
 export class MyProcessor implements FileProcessor {
-  supportedTypes = ["application/x-myformat"];
-  
+  supportedTypes = ['application/x-myformat'];
+
   async process(file: Buffer, filename: string): Promise<ProcessedDocument> {
     const text = extractTextFromFile(file);
     return {
       text,
-      metadata: { filename, format: "myformat" },
+      metadata: { filename, format: 'myformat' },
     };
   }
 }
@@ -251,7 +253,7 @@ export class MyProcessor implements FileProcessor {
 
 ```typescript
 // apps/server/src/services/storage/my-storage.ts
-import { StorageAdapter } from "@fileai/shared";
+import { StorageAdapter } from '@fileai/shared';
 
 export class MyStorageAdapter implements StorageAdapter {
   async upload(file: Buffer, path: string): Promise<string> {

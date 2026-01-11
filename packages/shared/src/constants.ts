@@ -47,4 +47,3 @@ export const PROCESSING_STATUS = {
   COMPLETED: 'completed',
   FAILED: 'failed',
 } as const;
-

@@ -1,14 +1,14 @@
-import { AbilityBuilder, createMongoAbility, MongoAbility, ForcedSubject } from "@casl/ability";
-import { IMembership, MemberRole, DEFAULT_ROLE_PERMISSIONS, PermissionAction, ResourceType } from "../../db/models/Membership";
+import { AbilityBuilder, createMongoAbility, MongoAbility, ForcedSubject } from '@casl/ability';
+import {
+  IMembership,
+  MemberRole,
+  DEFAULT_ROLE_PERMISSIONS,
+  PermissionAction,
+  ResourceType,
+} from '../../db/models/Membership';
 
 // Define subjects (resources) that can be acted upon
-type Subjects = 
-  | "Organization"
-  | "Document"
-  | "Chat"
-  | "Member"
-  | "Settings"
-  | "all";
+type Subjects = 'Organization' | 'Document' | 'Chat' | 'Member' | 'Settings' | 'all';
 
 // Define actions
 type Actions = PermissionAction;
@@ -22,18 +22,18 @@ export interface AbilityContext {
   memberships: {
     organizationId: string;
     role: MemberRole;
-    customPermissions?: IMembership["customPermissions"];
+    customPermissions?: IMembership['customPermissions'];
   }[];
 }
 
 // Map resource types to subjects
 const resourceToSubject: Record<ResourceType, Subjects> = {
-  all: "all",
-  organization: "Organization",
-  document: "Document",
-  chat: "Chat",
-  member: "Member",
-  settings: "Settings",
+  all: 'all',
+  organization: 'Organization',
+  document: 'Document',
+  chat: 'Chat',
+  member: 'Member',
+  settings: 'Settings',
 };
 
 /**
@@ -52,13 +52,15 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
     // Apply role-based permissions
     for (const permission of rolePermissions) {
       const subjectType = resourceToSubject[permission.resource];
-      
+
       for (const action of permission.actions) {
-        if (action === "manage") {
+        if (action === 'manage') {
           // "manage" grants all actions on the resource
-          can("manage", subjectType, { organizationId });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          can('manage', subjectType, { organizationId } as any);
         } else {
-          can(action, subjectType, { organizationId });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          can(action, subjectType, { organizationId } as any);
         }
       }
     }
@@ -67,18 +69,22 @@ export function defineAbilityFor(context: AbilityContext): AppAbility {
     if (customPermissions) {
       for (const permission of customPermissions) {
         const subjectType = resourceToSubject[permission.resource];
-        
+
         for (const action of permission.actions) {
-          can(action, subjectType, { organizationId });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          can(action, subjectType, { organizationId } as any);
         }
       }
     }
   }
 
   // Users can always read their own data (regardless of organization)
-  can("read", "Document", { userId: context.userId });
-  can("read", "Chat", { userId: context.userId });
-  can("manage", "Chat", { userId: context.userId });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  can('read', 'Document', { userId: context.userId } as any);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  can('read', 'Chat', { userId: context.userId } as any);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  can('manage', 'Chat', { userId: context.userId } as any);
 
   return build();
 }
@@ -90,9 +96,11 @@ export function checkPermission(
   ability: AppAbility,
   action: Actions,
   resource: Subjects,
-  resourceData?: Record<string, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  resourceData?: Record<string, any>
 ): boolean {
-  return ability.can(action, resource, resourceData as ForcedSubject<Subjects>);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ability.can(action, resource, resourceData as any);
 }
 
 /**
@@ -102,27 +110,37 @@ export function getOrganizationPermissions(
   ability: AppAbility,
   organizationId: string
 ): Record<Subjects, Actions[]> {
-  const subjects: Subjects[] = ["Organization", "Document", "Chat", "Member", "Settings"];
-  const actions: Actions[] = ["manage", "create", "read", "update", "delete", "share", "export", "invite"];
-  
+  const subjects: Subjects[] = ['Organization', 'Document', 'Chat', 'Member', 'Settings'];
+  const actions: Actions[] = [
+    'manage',
+    'create',
+    'read',
+    'update',
+    'delete',
+    'share',
+    'export',
+    'invite',
+  ];
+
   const permissions: Record<string, Actions[]> = {};
 
   for (const subjectName of subjects) {
     const allowedActions: Actions[] = [];
-    
+
     // Create subject object that matches the conditions
     const orgIdStr = String(organizationId);
     const subject = {
       __typename: subjectName,
       organizationId: orgIdStr,
     };
-    
+
     for (const action of actions) {
-      if (ability.can(action, subject)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (ability.can(action, subject as any)) {
         allowedActions.push(action);
       }
     }
-    
+
     permissions[subjectName] = allowedActions;
   }
 
@@ -134,10 +152,9 @@ export function getOrganizationPermissions(
  */
 export function definePublicAbility(): AppAbility {
   const { cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
-  
+
   // Public users cannot do anything by default
-  cannot("manage", "all");
-  
+  cannot('manage', 'all');
+
   return build();
 }
-

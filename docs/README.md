@@ -39,6 +39,6 @@ The `assets/` folder contains:
 
 ## License
 
-FileAI is licensed under [Apache License 2.0](../LICENSE). 
+FileAI is licensed under [Apache License 2.0](../LICENSE).
 
 You are free to use, modify, and distribute this software, but you must retain the copyright notices and attribution. See the [NOTICE](../NOTICE) file for attribution requirements.

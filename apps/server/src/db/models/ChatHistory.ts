@@ -1,7 +1,7 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IMessage {
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
   sources?: Array<{
     documentId: string;
@@ -23,7 +23,7 @@ export interface IChatHistory extends Document {
 const MessageSchema = new Schema({
   role: {
     type: String,
-    enum: ["user", "assistant"],
+    enum: ['user', 'assistant'],
     required: true,
   },
   content: {
@@ -65,8 +65,4 @@ const ChatHistorySchema = new Schema<IChatHistory>(
 // Indexes
 ChatHistorySchema.index({ userId: 1, createdAt: -1 });
 
-export const ChatHistory = mongoose.model<IChatHistory>(
-  "ChatHistory",
-  ChatHistorySchema
-);
-
+export const ChatHistory = mongoose.model<IChatHistory>('ChatHistory', ChatHistorySchema);

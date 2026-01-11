@@ -1,4 +1,4 @@
-import { initTRPC, TRPCError } from "@trpc/server";
+import { initTRPC, TRPCError } from '@trpc/server';
 
 // Context type
 export interface Context {
@@ -12,7 +12,7 @@ const t = initTRPC.context<Context>().create();
 // Middleware for authentication
 const isAuthenticated = t.middleware(({ ctx, next }) => {
   if (!ctx.userId) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
   return next({
     ctx: {
@@ -24,8 +24,8 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
 
 // Middleware for admin only
 const isAdmin = t.middleware(({ ctx, next }) => {
-  if (!ctx.userId || ctx.userRole !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN" });
+  if (!ctx.userId || ctx.userRole !== 'admin') {
+    throw new TRPCError({ code: 'FORBIDDEN' });
   }
   return next({
     ctx: {
@@ -43,4 +43,3 @@ export const adminProcedure = t.procedure.use(isAdmin);
 
 // Export types
 export type AppRouter = ReturnType<typeof router>;
-

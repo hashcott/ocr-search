@@ -1,17 +1,17 @@
-import { FileProcessor, ProcessedDocument } from "@fileai/shared";
-import { XMLParser } from "fast-xml-parser";
+import { FileProcessor, ProcessedDocument } from '@fileai/shared';
+import { XMLParser } from 'fast-xml-parser';
 
 export class XMLProcessor implements FileProcessor {
-  supportedTypes = ["application/xml", "text/xml"];
+  supportedTypes = ['application/xml', 'text/xml'];
 
   async process(file: Buffer, _filename: string): Promise<ProcessedDocument> {
     try {
       const parser = new XMLParser({
         ignoreAttributes: false,
-        attributeNamePrefix: "@_",
+        attributeNamePrefix: '@_',
       });
 
-      const xmlText = file.toString("utf-8");
+      const xmlText = file.toString('utf-8');
       const jsonObj = parser.parse(xmlText);
 
       // Convert JSON to readable text
@@ -24,28 +24,28 @@ export class XMLProcessor implements FileProcessor {
         },
       };
     } catch (error) {
-      console.error("XML processing error:", error);
+      console.error('XML processing error:', error);
       throw new Error(`Failed to process XML: ${error}`);
     }
   }
 
   private jsonToText(obj: unknown, indent = 0): string {
-    let text = "";
-    const spaces = "  ".repeat(indent);
+    let text = '';
+    const spaces = '  '.repeat(indent);
 
-    if (typeof obj === "string" || typeof obj === "number") {
+    if (typeof obj === 'string' || typeof obj === 'number') {
       return obj.toString();
     }
 
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.jsonToText(item, indent)).join("\n");
+      return obj.map((item) => this.jsonToText(item, indent)).join('\n');
     }
 
-    if (typeof obj === "object") {
+    if (typeof obj === 'object' && obj !== null) {
       for (const [key, value] of Object.entries(obj)) {
-        if (key.startsWith("@_")) continue; // Skip attributes
+        if (key.startsWith('@_')) continue; // Skip attributes
 
-        if (typeof value === "object") {
+        if (typeof value === 'object') {
           text += `${spaces}${key}:\n${this.jsonToText(value, indent + 1)}\n`;
         } else {
           text += `${spaces}${key}: ${value}\n`;
@@ -56,4 +56,3 @@ export class XMLProcessor implements FileProcessor {
     return text;
   }
 }
-

@@ -20,6 +20,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -32,10 +33,11 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment:**
- - OS: [e.g. Ubuntu 22.04]
- - Node.js version: [e.g. 22.0.0]
- - Browser: [e.g. Chrome 120]
- - FileAI version: [e.g. 1.0.0]
+
+- OS: [e.g. Ubuntu 22.04]
+- Node.js version: [e.g. 22.0.0]
+- Browser: [e.g. Chrome 120]
+- FileAI version: [e.g. 1.0.0]
 
 **Additional context**
 Add any other context about the problem here.
@@ -136,6 +138,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 **Types:**
+
 - `feat`: A new feature
 - `fix`: A bug fix
 - `docs`: Documentation only changes
@@ -175,6 +178,7 @@ Fixes #456
 - `test/` - Test additions or changes
 
 **Examples:**
+
 - `feature/add-ocr-support`
 - `fix/upload-timeout-issue`
 - `docs/update-api-reference`
@@ -206,10 +210,10 @@ describe('UserService', () => {
       // Arrange
       const userId = '123';
       const expectedUser = { id: '123', name: 'John' };
-      
+
       // Act
       const result = await userService.getUserById(userId);
-      
+
       // Assert
       expect(result).toEqual(expectedUser);
     });
@@ -239,6 +243,7 @@ describe('UserService', () => {
 ## Recognition
 
 Contributors will be recognized in:
+
 - The project README
 - Release notes
 - Our website (coming soon)

@@ -10,6 +10,8 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -52,6 +54,7 @@
     "@types/node": "^20.10.6",
     "@types/pdf-parse": "^1.1.4",
     "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
     "globals": "^15.14.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",

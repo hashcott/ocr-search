@@ -1,16 +1,16 @@
-import express from "express";
-import cors from "cors";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import dotenv from "dotenv";
-import jwt from "jsonwebtoken";
-import { createServer } from "http";
-import { appRouter, AppRouter } from "./routers";
-import { createContext } from "./context";
-import { connectDatabase } from "./db/connection";
-import { Document } from "./db/models/Document";
-import { getStorageAdapter } from "./services/storage";
-import { JWT_SECRET } from "./config/jwt";
-import { initializeWebSocket } from "./services/websocket";
+import express from 'express';
+import cors from 'cors';
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import { createServer } from 'http';
+import { appRouter, AppRouter } from './routers';
+import { createContext } from './context';
+import { connectDatabase } from './db/connection';
+import { Document } from './db/models/Document';
+import { getStorageAdapter } from './services/storage';
+import { JWT_SECRET } from './config/jwt';
+import { initializeWebSocket } from './services/websocket';
 
 // Export types for the client
 export type { AppRouter };
@@ -23,33 +23,35 @@ const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Middleware - Configure CORS to allow credentials and authorization headers
-app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-}));
-app.use(express.json({ limit: "50mb" }));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  })
+);
+app.use(express.json({ limit: '50mb' }));
 
 // Health check endpoint
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 // File download endpoint
-app.get("/api/files/:id", async (req, res) => {
+app.get('/api/files/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const authHeader = req.headers.authorization;
-    
-    console.log("Download request for:", id);
-    console.log("Auth header present:", !!authHeader);
-    
-    const token = authHeader?.replace("Bearer ", "");
+
+    console.log('Download request for:', id);
+    console.log('Auth header present:', !!authHeader);
+
+    const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      console.log("No token in request");
-      return res.status(401).json({ error: "Unauthorized - No token provided" });
+      console.log('No token in request');
+      return res.status(401).json({ error: 'Unauthorized - No token provided' });
     }
 
     // Verify token
@@ -57,10 +59,10 @@ app.get("/api/files/:id", async (req, res) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
       userId = decoded.userId;
-      console.log("Token verified for user:", userId);
+      console.log('Token verified for user:', userId);
     } catch (jwtError) {
-      console.error("JWT verification failed:", jwtError);
-      return res.status(401).json({ error: "Invalid token" });
+      console.error('JWT verification failed:', jwtError);
+      return res.status(401).json({ error: 'Invalid token' });
     }
 
     // Find document
@@ -70,7 +72,7 @@ app.get("/api/files/:id", async (req, res) => {
     });
 
     if (!document) {
-      return res.status(404).json({ error: "Document not found" });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     // Get file from storage
@@ -78,24 +80,24 @@ app.get("/api/files/:id", async (req, res) => {
     const fileBuffer = await storage.download(document.originalPath);
 
     // Set response headers
-    res.setHeader("Content-Type", document.mimeType || "application/octet-stream");
+    res.setHeader('Content-Type', document.mimeType || 'application/octet-stream');
     res.setHeader(
-      "Content-Disposition",
+      'Content-Disposition',
       `attachment; filename="${encodeURIComponent(document.filename)}"`
     );
-    res.setHeader("Content-Length", fileBuffer.length);
+    res.setHeader('Content-Length', fileBuffer.length);
 
     // Send file
     res.send(fileBuffer);
   } catch (error) {
-    console.error("File download error:", error);
-    res.status(500).json({ error: "Failed to download file" });
+    console.error('File download error:', error);
+    res.status(500).json({ error: 'Failed to download file' });
   }
 });
 
 // tRPC endpoint
 app.use(
-  "/trpc",
+  '/trpc',
   createExpressMiddleware({
     router: appRouter,
     createContext,
@@ -107,11 +109,11 @@ async function start() {
   try {
     // Connect to database
     await connectDatabase();
-    console.log("✅ Database connected");
+    console.log('✅ Database connected');
 
     // Initialize WebSocket
     initializeWebSocket(httpServer);
-    console.log("✅ WebSocket server initialized");
+    console.log('✅ WebSocket server initialized');
 
     httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
@@ -119,10 +121,9 @@ async function start() {
       console.log(`🔌 WebSocket server ready`);
     });
   } catch (error) {
-    console.error("❌ Failed to start server:", error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 }
 
 start();
-

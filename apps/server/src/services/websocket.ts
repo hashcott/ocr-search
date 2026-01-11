@@ -1,25 +1,26 @@
-import { Server as HTTPServer } from "http";
-import { Server as SocketIOServer, Socket } from "socket.io";
-import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../config/jwt";
+import { Server as HTTPServer } from 'http';
+import { Server as SocketIOServer, Socket } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/jwt';
 
 let io: SocketIOServer | null = null;
 
 export function initializeWebSocket(server: HTTPServer) {
   io = new SocketIOServer(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:3000",
+      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
       credentials: true,
     },
-    transports: ["websocket", "polling"],
+    transports: ['websocket', 'polling'],
   });
 
   // Authentication middleware
   io.use((socket: Socket, next) => {
-    const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace("Bearer ", "");
-    
+    const token =
+      socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+
     if (!token) {
-      return next(new Error("Authentication error: No token provided"));
+      return next(new Error('Authentication error: No token provided'));
     }
 
     try {
@@ -27,18 +28,18 @@ export function initializeWebSocket(server: HTTPServer) {
       (socket as unknown as { userId: string }).userId = decoded.userId;
       next();
     } catch (_err) {
-      next(new Error("Authentication error: Invalid token"));
+      next(new Error('Authentication error: Invalid token'));
     }
   });
 
-  io.on("connection", (socket: Socket) => {
+  io.on('connection', (socket: Socket) => {
     const userId = (socket as unknown as { userId: string }).userId;
     console.log(`🔌 WebSocket connected: User ${userId}`);
 
     // Join user's personal room
     socket.join(`user:${userId}`);
 
-    socket.on("disconnect", () => {
+    socket.on('disconnect', () => {
       console.log(`🔌 WebSocket disconnected: User ${userId}`);
     });
   });
@@ -48,28 +49,33 @@ export function initializeWebSocket(server: HTTPServer) {
 
 export function getIO(): SocketIOServer {
   if (!io) {
-    throw new Error("WebSocket server not initialized. Call initializeWebSocket first.");
+    throw new Error('WebSocket server not initialized. Call initializeWebSocket first.');
   }
   return io;
 }
 
 // Helper functions to emit notifications
-export function emitDocumentProcessed(userId: string, data: {
-  documentId: string;
-  filename: string;
-  status: "completed" | "failed";
-  error?: string;
-}) {
+export function emitDocumentProcessed(
+  userId: string,
+  data: {
+    documentId: string;
+    filename: string;
+    status: 'completed' | 'failed';
+    error?: string;
+  }
+) {
   const socketIO = getIO();
-  socketIO.to(`user:${userId}`).emit("document:processed", data);
+  socketIO.to(`user:${userId}`).emit('document:processed', data);
 }
 
-export function emitChatCompleted(userId: string, data: {
-  chatId: string;
-  message: string;
-  sourcesCount: number;
-}) {
+export function emitChatCompleted(
+  userId: string,
+  data: {
+    chatId: string;
+    message: string;
+    sourcesCount: number;
+  }
+) {
   const socketIO = getIO();
-  socketIO.to(`user:${userId}`).emit("chat:completed", data);
+  socketIO.to(`user:${userId}`).emit('chat:completed', data);
 }
-

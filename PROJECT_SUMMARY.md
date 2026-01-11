@@ -224,19 +224,19 @@ docker-compose up -d
 
 ## 📋 Technology Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | Next.js 14, React 18, shadcn/ui, TailwindCSS |
-| **API** | tRPC v11, Zod validation |
-| **Backend** | Node.js, Express |
-| **AI/ML** | LangChain.js, Ollama, OpenAI |
-| **Authentication** | JWT, bcrypt |
-| **Database** | MongoDB, Mongoose |
-| **Vector DB** | Qdrant |
-| **Storage** | S3, MinIO, Local |
-| **File Processing** | pdf-parse, mammoth, fast-xml-parser |
-| **Deployment** | Docker, Docker Compose |
-| **Monorepo** | Turborepo |
+| Layer               | Technology                                   |
+| ------------------- | -------------------------------------------- |
+| **Frontend**        | Next.js 14, React 18, shadcn/ui, TailwindCSS |
+| **API**             | tRPC v11, Zod validation                     |
+| **Backend**         | Node.js, Express                             |
+| **AI/ML**           | LangChain.js, Ollama, OpenAI                 |
+| **Authentication**  | JWT, bcrypt                                  |
+| **Database**        | MongoDB, Mongoose                            |
+| **Vector DB**       | Qdrant                                       |
+| **Storage**         | S3, MinIO, Local                             |
+| **File Processing** | pdf-parse, mammoth, fast-xml-parser          |
+| **Deployment**      | Docker, Docker Compose                       |
+| **Monorepo**        | Turborepo                                    |
 
 ## 🔄 Data Flow
 
@@ -319,6 +319,7 @@ Answer + sources returned to user
 ## 🧪 Future Enhancements
 
 ### Already Prepared For:
+
 - OCR support (placeholder in PDF processor)
 - Meilisearch vector store (interface ready)
 - MongoDB vector search (interface ready)
@@ -326,6 +327,7 @@ Answer + sources returned to user
 - Stirling-PDF integration (mentioned in plan)
 
 ### Potential Additions:
+
 - User groups/teams
 - Document sharing
 - Advanced search filters
@@ -349,6 +351,7 @@ Answer + sources returned to user
 ## 🎓 Key Learnings
 
 This codebase demonstrates:
+
 - Modern full-stack TypeScript development
 - Microservices architecture patterns
 - AI/ML integration best practices
@@ -368,7 +371,7 @@ This codebase demonstrates:
 The codebase is designed to be extended. Key extension points:
 
 1. **Add File Processor**: Implement `FileProcessor` interface
-2. **Add Storage**: Implement `StorageAdapter` interface  
+2. **Add Storage**: Implement `StorageAdapter` interface
 3. **Add Vector Store**: Implement `VectorStoreAdapter` interface
 4. **Add UI Component**: Use shadcn/ui patterns
 
@@ -399,7 +402,7 @@ The codebase is designed to be extended. Key extension points:
 ✅ System setup wizard  
 ✅ Docker Compose configuration  
 ✅ Development scripts  
-✅ Comprehensive documentation  
+✅ Comprehensive documentation
 
 ## 🎉 Status: COMPLETE
 
@@ -408,4 +411,3 @@ All planned features from the original specification have been implemented succe
 ---
 
 **Built with ❤️ using modern web technologies**
-

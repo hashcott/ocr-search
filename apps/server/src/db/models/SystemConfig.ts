@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISystemConfig extends Document {
   isSetupComplete: boolean;
@@ -6,7 +6,7 @@ export interface ISystemConfig extends Document {
     url: string;
   };
   storage: {
-    type: "s3" | "local" | "minio";
+    type: 's3' | 'local' | 'minio';
     config: {
       bucket?: string;
       region?: string;
@@ -17,7 +17,7 @@ export interface ISystemConfig extends Document {
     };
   };
   vectorDB: {
-    type: "qdrant" | "meilisearch" | "mongodb";
+    type: 'qdrant' | 'meilisearch' | 'mongodb';
     config: {
       url: string;
       apiKey?: string;
@@ -25,14 +25,14 @@ export interface ISystemConfig extends Document {
     };
   };
   llm: {
-    provider: "ollama" | "openai";
+    provider: 'ollama' | 'openai';
     model: string;
     apiKey?: string;
     baseUrl?: string;
     temperature?: number;
   };
   embedding: {
-    provider: "ollama" | "openai";
+    provider: 'ollama' | 'openai';
     model: string;
     apiKey?: string;
     baseUrl?: string;
@@ -53,7 +53,7 @@ const SystemConfigSchema = new Schema<ISystemConfig>(
     storage: {
       type: {
         type: String,
-        enum: ["s3", "local", "minio"],
+        enum: ['s3', 'local', 'minio'],
       },
       config: {
         bucket: String,
@@ -67,7 +67,7 @@ const SystemConfigSchema = new Schema<ISystemConfig>(
     vectorDB: {
       type: {
         type: String,
-        enum: ["qdrant", "meilisearch", "mongodb"],
+        enum: ['qdrant', 'meilisearch', 'mongodb'],
       },
       config: {
         url: String,
@@ -78,7 +78,7 @@ const SystemConfigSchema = new Schema<ISystemConfig>(
     llm: {
       provider: {
         type: String,
-        enum: ["ollama", "openai"],
+        enum: ['ollama', 'openai'],
       },
       model: String,
       apiKey: String,
@@ -88,7 +88,7 @@ const SystemConfigSchema = new Schema<ISystemConfig>(
     embedding: {
       provider: {
         type: String,
-        enum: ["ollama", "openai"],
+        enum: ['ollama', 'openai'],
       },
       model: String,
       apiKey: String,
@@ -100,8 +100,4 @@ const SystemConfigSchema = new Schema<ISystemConfig>(
   }
 );
 
-export const SystemConfig = mongoose.model<ISystemConfig>(
-  "SystemConfig",
-  SystemConfigSchema
-);
-
+export const SystemConfig = mongoose.model<ISystemConfig>('SystemConfig', SystemConfigSchema);

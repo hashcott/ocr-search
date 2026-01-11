@@ -81,4 +81,3 @@ export interface RAGResponse {
   sources: SearchResult[];
   tokensUsed?: number;
 }
-

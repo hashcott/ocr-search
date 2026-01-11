@@ -19,30 +19,30 @@
     /* Verdant Light Theme */
     --background: 0 0% 96%;
     --foreground: 0 0% 9%;
-    
+
     --card: 0 0% 98%;
     --card-foreground: 0 0% 9%;
-    
+
     --popover: 0 0% 89%;
     --popover-foreground: 0 0% 9%;
-    
+
     /* Primary: Verdant Green - Fresh, Natural, Growth */
     --primary: 161 93% 30%;
     --primary-foreground: 151 80% 95%;
-    
+
     --secondary: 0 0% 32%;
     --secondary-foreground: 0 0% 98%;
-    
+
     --muted: 0 0% 63%;
     --muted-foreground: 0 0% 9%;
-    
+
     /* Accent: Soft mint for highlights */
     --accent: 166 76% 96%;
     --accent-foreground: 173 80% 40%;
-    
+
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 85% 97%;
-    
+
     --border: 0 0% 83%;
     --input: 0 0% 83%;
     --ring: 161 93% 30%;
@@ -65,9 +65,13 @@
     --sidebar-ring: 161 93% 30%;
 
     /* Typography - Verdant font stack */
-    --font-sans: 'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    --font-sans:
+      'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
     --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-    --font-mono: 'Inconsolata', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --font-mono:
+      'Inconsolata', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+      'Courier New', monospace;
     --font-heading: var(--font-sans);
 
     /* Radius - Soft, organic shapes */
@@ -91,30 +95,30 @@
     /* Verdant Dark Theme */
     --background: 0 0% 9%;
     --foreground: 0 0% 98%;
-    
+
     --card: 0 0% 14%;
     --card-foreground: 0 0% 98%;
-    
+
     --popover: 0 0% 25%;
     --popover-foreground: 0 0% 98%;
-    
+
     /* Primary: Brighter green for dark mode visibility */
     --primary: 158 64% 51%;
     --primary-foreground: 165 91% 9%;
-    
+
     --secondary: 0 0% 45%;
     --secondary-foreground: 0 0% 98%;
-    
+
     --muted: 0 0% 45%;
     --muted-foreground: 0 0% 98%;
-    
+
     /* Accent: Deep teal background */
     --accent: 178 84% 10%;
     --accent-foreground: 172 66% 50%;
-    
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 85% 97%;
-    
+
     --border: 0 0% 32%;
     --input: 0 0% 32%;
     --ring: 158 64% 51%;
@@ -163,13 +167,21 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-heading);
     font-weight: 600;
     letter-spacing: -0.025em;
   }
 
-  code, pre, kbd, samp {
+  code,
+  pre,
+  kbd,
+  samp {
     font-family: var(--font-mono);
   }
 }
@@ -209,7 +221,7 @@
 
 /* Simple focus ring */
 .ring-glow {
-  box-shadow: 
+  box-shadow:
     0 0 0 2px hsl(var(--background)),
     0 0 0 4px hsl(var(--primary) / 0.3);
 }
@@ -292,7 +304,7 @@
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 8px 24px -8px hsl(0 0% 0% / 0.12),
     0 0 0 1px hsl(var(--primary) / 0.1);
 }
@@ -308,7 +320,8 @@
 
 /* Subtle pulse for AI processing */
 @keyframes ai-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -322,7 +335,8 @@
 
 /* Brain/Processing animation */
 @keyframes brain-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -338,10 +352,12 @@
 
 /* Streaming text cursor */
 @keyframes blink-cursor {
-  0%, 50% {
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+  51%,
+  100% {
     opacity: 0;
   }
 }
@@ -352,7 +368,8 @@
 
 /* Typing dots for AI */
 @keyframes typing-dots {
-  0%, 20% {
+  0%,
+  20% {
     opacity: 0.2;
     transform: translateY(0);
   }
@@ -360,7 +377,8 @@
     opacity: 1;
     transform: translateY(-2px);
   }
-  60%, 100% {
+  60%,
+  100% {
     opacity: 0.2;
     transform: translateY(0);
   }
@@ -395,10 +413,18 @@
 }
 
 /* Staggered fade in */
-.animate-fadeIn-delay-1 { animation-delay: 50ms; }
-.animate-fadeIn-delay-2 { animation-delay: 100ms; }
-.animate-fadeIn-delay-3 { animation-delay: 150ms; }
-.animate-fadeIn-delay-4 { animation-delay: 200ms; }
+.animate-fadeIn-delay-1 {
+  animation-delay: 50ms;
+}
+.animate-fadeIn-delay-2 {
+  animation-delay: 100ms;
+}
+.animate-fadeIn-delay-3 {
+  animation-delay: 150ms;
+}
+.animate-fadeIn-delay-4 {
+  animation-delay: 200ms;
+}
 
 /* Slide in from left */
 @keyframes slideInLeft {
@@ -492,7 +518,7 @@
 /* Focus visible outline */
 .focus-ring:focus-visible {
   outline: none;
-  box-shadow: 
+  box-shadow:
     0 0 0 2px hsl(var(--background)),
     0 0 0 4px hsl(var(--primary) / 0.5);
 }
@@ -526,7 +552,7 @@
 
 /* Grid pattern */
 .bg-grid {
-  background-image: 
+  background-image:
     linear-gradient(hsl(var(--border) / 0.2) 1px, transparent 1px),
     linear-gradient(90deg, hsl(var(--border) / 0.2) 1px, transparent 1px);
   background-size: 32px 32px;

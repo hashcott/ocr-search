@@ -13,11 +13,7 @@ interface WebSocketState {
     status: 'completed' | 'failed';
     error?: string;
   }) => void;
-  onChatCompleted?: (data: {
-    chatId: string;
-    message: string;
-    sourcesCount: number;
-  }) => void;
+  onChatCompleted?: (data: { chatId: string; message: string; sourcesCount: number }) => void;
   setDocumentHandler: (handler?: WebSocketState['onDocumentProcessed']) => void;
   setChatHandler: (handler?: WebSocketState['onChatCompleted']) => void;
 }
@@ -29,9 +25,10 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
   onChatCompleted: undefined,
   connect: (token) => {
     if (get().socket?.connected) return;
-    
-    const url = process.env.NEXT_PUBLIC_SERVER_URL || 
-      process.env.NEXT_PUBLIC_API_URL?.replace('/trpc', '') || 
+
+    const url =
+      process.env.NEXT_PUBLIC_SERVER_URL ||
+      process.env.NEXT_PUBLIC_API_URL?.replace('/trpc', '') ||
       'http://localhost:3001';
 
     const socket = io(url, {
@@ -60,7 +57,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 
       if (data.status === 'completed') {
         playSuccessSound();
-        
+
         if (typeof window !== 'undefined' && Notification.permission === 'granted') {
           new Notification('Document Ready', {
             body: `${data.filename} has been processed successfully!`,
@@ -70,7 +67,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
         }
       } else {
         playErrorSound();
-        
+
         if (typeof window !== 'undefined' && Notification.permission === 'granted') {
           new Notification('Processing Failed', {
             body: `Failed to process ${data.filename}: ${data.error || 'Unknown error'}`,

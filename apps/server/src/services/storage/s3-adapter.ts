@@ -1,7 +1,7 @@
-import { S3Client, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { Upload } from "@aws-sdk/lib-storage";
-import { StorageAdapter } from "@fileai/shared";
-import { Readable } from "stream";
+import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import { StorageAdapter } from '@fileai/shared';
+import { Readable } from 'stream';
 
 interface S3Config {
   bucket: string;
@@ -54,7 +54,7 @@ export class S3Adapter implements StorageAdapter {
     const response = await this.client.send(command);
 
     if (!response.Body) {
-      throw new Error("File not found");
+      throw new Error('File not found');
     }
 
     // Convert stream to buffer
@@ -62,9 +62,9 @@ export class S3Adapter implements StorageAdapter {
     const chunks: Buffer[] = [];
 
     return new Promise((resolve, reject) => {
-      stream.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-      stream.on("error", reject);
-      stream.on("end", () => resolve(Buffer.concat(chunks)));
+      stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+      stream.on('error', reject);
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
     });
   }
 
@@ -88,4 +88,3 @@ export class S3Adapter implements StorageAdapter {
     return `https://${this.bucket}.s3.amazonaws.com/${path}`;
   }
 }
-

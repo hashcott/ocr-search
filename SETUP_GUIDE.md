@@ -18,6 +18,7 @@ npm run setup
 ```
 
 This script will:
+
 - Install all dependencies
 - Create `.env` files from examples
 - Check for Docker
@@ -31,6 +32,7 @@ npm run services:start
 ```
 
 This starts:
+
 - MongoDB on `localhost:27017`
 - Qdrant on `localhost:6333`
 - MinIO on `localhost:9000` (Console: `localhost:9001`)
@@ -38,6 +40,7 @@ This starts:
 **Option B: Manual Installation**
 
 Install and configure each service manually:
+
 - [MongoDB](https://www.mongodb.com/try/download/community)
 - [Qdrant](https://qdrant.tech/documentation/quick-start/)
 - [MinIO](https://min.io/download) or use AWS S3
@@ -61,6 +64,7 @@ npm run dev
 ```
 
 This starts:
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 
@@ -96,6 +100,7 @@ docker-compose down
 ```
 
 Services will be available at:
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - MongoDB: localhost:27017
@@ -186,7 +191,7 @@ Example:
 ```typescript
 export class NewFormatProcessor implements FileProcessor {
   supportedTypes = ["application/new-format"];
-  
+
   async process(file: Buffer, filename: string): Promise<ProcessedDocument> {
     // Your processing logic
     return {
@@ -276,6 +281,7 @@ docker-compose down -v # Remove all containers and volumes
 ## Support
 
 For issues and questions:
+
 - Check the troubleshooting section above
 - Review logs: `npm run docker:logs`
 - Open an issue on GitHub
@@ -300,4 +306,3 @@ For issues and questions:
 ## License
 
 MIT
-

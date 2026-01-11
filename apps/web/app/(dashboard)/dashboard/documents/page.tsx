@@ -50,7 +50,9 @@ import {
   Globe,
   Users,
   Loader2,
+  Eye,
 } from 'lucide-react';
+import { FilePreviewDialog } from '@/components/ui/file-preview-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate, formatBytes } from '@/lib/utils';
 import Link from 'next/link';
@@ -73,6 +75,17 @@ export default function DocumentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{
+    id: string;
+    filename: string;
+    mimeType: string;
+  } | null>(null);
+
+  const handlePreview = (doc: { id: string; filename: string; mimeType: string }) => {
+    setPreviewFile(doc);
+    setPreviewOpen(true);
+  };
 
   const { data: documents, isLoading, refetch } = trpc.document.list.useQuery();
   const { data: organizations } = trpc.organization.list.useQuery();
@@ -571,45 +584,62 @@ export default function DocumentsPage() {
                     <td className="text-muted-foreground hidden px-4 py-3 text-sm lg:table-cell">
                       {formatDate(doc.createdAt)}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDownload(doc)}
-                          className="h-8 w-8 rounded-lg"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="bg-card border-border rounded-lg"
-                          >
-                            <DropdownMenuItem
-                              onClick={() => handleDownload(doc)}
-                              className="rounded"
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              Download
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-border" />
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(doc.id)}
-                              className="text-destructive focus:text-destructive rounded"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
+<td className="px-4 py-3">
+                                      <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => handlePreview(doc)}
+                                          className="h-8 w-8 rounded-lg"
+                                          title="Preview"
+                                        >
+                                          <Eye className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => handleDownload(doc)}
+                                          className="h-8 w-8 rounded-lg"
+                                          title="Download"
+                                        >
+                                          <Download className="h-4 w-4" />
+                                        </Button>
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                                              <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent
+                                            align="end"
+                                            className="bg-card border-border rounded-lg"
+                                          >
+                                            <DropdownMenuItem
+                                              onClick={() => handlePreview(doc)}
+                                              className="rounded"
+                                            >
+                                              <Eye className="mr-2 h-4 w-4" />
+                                              Preview
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                              onClick={() => handleDownload(doc)}
+                                              className="rounded"
+                                            >
+                                              <Download className="mr-2 h-4 w-4" />
+                                              Download
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator className="bg-border" />
+                                            <DropdownMenuItem
+                                              onClick={() => handleDelete(doc.id)}
+                                              className="text-destructive focus:text-destructive rounded"
+                                            >
+                                              <Trash2 className="mr-2 h-4 w-4" />
+                                              Delete
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      </div>
+                                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -637,29 +667,39 @@ export default function DocumentsPage() {
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-card border-border rounded-lg">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(doc);
-                        }}
-                        className="rounded"
-                      >
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-border" />
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(doc.id);
-                        }}
-                        className="text-destructive focus:text-destructive rounded"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
+<DropdownMenuContent align="end" className="bg-card border-border rounded-lg">
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handlePreview(doc);
+                                        }}
+                                        className="rounded"
+                                      >
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        Preview
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownload(doc);
+                                        }}
+                                        className="rounded"
+                                      >
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator className="bg-border" />
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDelete(doc.id);
+                                        }}
+                                        className="text-destructive focus:text-destructive rounded"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
 
@@ -739,6 +779,13 @@ export default function DocumentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* File Preview Dialog */}
+      <FilePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        file={previewFile}
+      />
     </div>
   );
 }

@@ -6,7 +6,8 @@ import { trpc } from '@/lib/trpc/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, FileText, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { Search, FileText, Sparkles, ArrowRight, Loader2, Eye } from 'lucide-react';
+import { FilePreviewDialog } from '@/components/ui/file-preview-dialog';
 import { formatDate } from '@/lib/utils';
 
 export default function FilesPage() {
@@ -20,12 +21,32 @@ export default function FilesPage() {
     Array<{
       content: string;
       score: number;
-      metadata: { filename?: string };
-      document?: { createdAt: string };
+      metadata: { filename?: string; documentId?: string; mimeType?: string };
+      document?: { createdAt: string; _id?: string; mimeType?: string };
     }>
   >([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{
+    id: string;
+    filename: string;
+    mimeType: string;
+  } | null>(null);
+
+  const handlePreview = (result: {
+    metadata: { filename?: string; documentId?: string; mimeType?: string };
+    document?: { _id?: string; mimeType?: string };
+  }) => {
+    const docId = result.metadata.documentId || result.document?._id;
+    const filename = result.metadata.filename || 'Document';
+    const mimeType = result.metadata.mimeType || result.document?.mimeType || 'application/pdf';
+
+    if (docId) {
+      setPreviewFile({ id: docId, filename, mimeType });
+      setPreviewOpen(true);
+    }
+  };
 
   const searchMutation = trpc.document.search.useMutation({
     onSuccess: (data) => {
@@ -178,21 +199,22 @@ export default function FilesPage() {
                           {result.content}
                         </p>
 
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground text-xs">
-                            {result.document
-                              ? formatDate(result.document.createdAt)
-                              : 'Unknown date'}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-primary hover:bg-primary/10 h-7 rounded-md text-xs"
-                          >
-                            View
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                          </Button>
-                        </div>
+<div className="flex items-center justify-between">
+                                          <span className="text-muted-foreground text-xs">
+                                            {result.document
+                                              ? formatDate(result.document.createdAt)
+                                              : 'Unknown date'}
+                                          </span>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-primary hover:bg-primary/10 h-7 rounded-md text-xs"
+                                            onClick={() => handlePreview(result)}
+                                          >
+                                            <Eye className="mr-1 h-3 w-3" />
+                                            Preview
+                                          </Button>
+                                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -230,6 +252,13 @@ export default function FilesPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* File Preview Dialog */}
+      <FilePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        file={previewFile}
+      />
     </div>
   );
 }

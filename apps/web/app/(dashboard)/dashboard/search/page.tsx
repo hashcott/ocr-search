@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,9 @@ import {
   Sparkles,
   X,
   Menu,
+  Eye,
 } from 'lucide-react';
+import { FilePreviewDialog } from '@/components/ui/file-preview-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/utils';
 import { useChatStore, useUIStore, useWebSocketStore } from '@/lib/stores';
@@ -57,6 +59,25 @@ export default function SearchPage() {
   const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
 
   const setChatHandler = useWebSocketStore((state) => state.setChatHandler);
+
+  // File preview state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{
+    id: string;
+    filename: string;
+    mimeType: string;
+  } | null>(null);
+
+  const handlePreview = (source: Source) => {
+    const docId = source.documentId || (source.metadata?.documentId as string);
+    const filename = (source.metadata?.filename as string) || source.filename || 'Document';
+    const mimeType = (source.metadata?.mimeType as string) || 'application/pdf';
+
+    if (docId) {
+      setPreviewFile({ id: docId, filename, mimeType });
+      setPreviewOpen(true);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -352,15 +373,19 @@ export default function SearchPage() {
                           {message.sources.slice(0, 4).map((source, idx) => (
                             <div
                               key={idx}
-                              className="bg-accent border-border rounded-lg border p-3"
+                              className="bg-accent border-border group/source hover:border-primary/30 cursor-pointer rounded-lg border p-3 transition-colors"
+                              onClick={() => handlePreview(source)}
                             >
                               <div className="mb-2 flex items-center justify-between">
-                                <FileText className="text-primary h-3.5 w-3.5" />
+                                <div className="flex items-center gap-1.5">
+                                  <FileText className="text-primary h-3.5 w-3.5" />
+                                  <Eye className="text-muted-foreground h-3 w-3 opacity-0 transition-opacity group-hover/source:opacity-100" />
+                                </div>
                                 <span className="text-chart-2 text-xs font-medium">
                                   {((source.score || 0) * 100).toFixed(0)}%
                                 </span>
                               </div>
-                              <p className="text-muted-foreground mb-1 truncate text-xs">
+                              <p className="text-muted-foreground group-hover/source:text-primary mb-1 truncate text-xs">
                                 {(source.metadata?.filename as string) ||
                                   source.filename ||
                                   'Document'}
@@ -449,6 +474,9 @@ export default function SearchPage() {
           <Menu className="h-5 w-5" />
         </button>
       )}
+
+      {/* File Preview Dialog */}
+      <FilePreviewDialog open={previewOpen} onOpenChange={setPreviewOpen} file={previewFile} />
     </div>
   );
 }

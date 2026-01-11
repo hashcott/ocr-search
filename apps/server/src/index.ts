@@ -95,6 +95,64 @@ app.get('/api/files/:id', async (req, res) => {
   }
 });
 
+// File preview endpoint (inline display without download)
+app.get('/api/files/:id/preview', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const authHeader = req.headers.authorization;
+
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized - No token provided' });
+    }
+
+    // Verify token
+    let userId: string;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+      userId = decoded.userId;
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError);
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    // Find document - check both personal and shared documents
+    const document = await Document.findOne({
+      _id: id,
+      $or: [
+        { userId },
+        { sharedWith: userId },
+        { 'sharedWithUsers.userId': userId },
+      ],
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    // Get file from storage
+    const storage = await getStorageAdapter();
+    const fileBuffer = await storage.download(document.originalPath);
+
+    // Set response headers for inline display
+    res.setHeader('Content-Type', document.mimeType || 'application/octet-stream');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${encodeURIComponent(document.filename)}"`
+    );
+    res.setHeader('Content-Length', fileBuffer.length);
+    // Enable caching for preview
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+
+    // Send file
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error('File preview error:', error);
+    res.status(500).json({ error: 'Failed to load file preview' });
+  }
+});
+
 // tRPC endpoint
 app.use(
   '/trpc',

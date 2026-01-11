@@ -24,7 +24,10 @@ import {
   MessageSquare,
   Sparkles,
   Loader2,
+  Eye,
 } from 'lucide-react';
+import { useState } from 'react';
+import { FilePreviewDialog } from '@/components/ui/file-preview-dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -58,6 +61,19 @@ export default function DashboardPage() {
       });
     },
   });
+
+  // File preview state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{
+    id: string;
+    filename: string;
+    mimeType: string;
+  } | null>(null);
+
+  const handlePreview = (doc: { id: string; filename: string; mimeType: string }) => {
+    setPreviewFile(doc);
+    setPreviewOpen(true);
+  };
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate({ id });
@@ -356,18 +372,29 @@ export default function DashboardPage() {
                           {formatDate(doc.createdAt)}
                         </span>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="hover:bg-primary/10 hover:text-primary text-muted-foreground h-8 w-8 rounded-lg transition-colors"
-                            disabled={doc.processingStatus !== 'completed'}
-                            onClick={() => handleDownload(doc)}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
+<td className="px-5 py-4">
+                                        <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                          <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="hover:bg-primary/10 hover:text-primary text-muted-foreground h-8 w-8 rounded-lg transition-colors"
+                                            disabled={doc.processingStatus !== 'completed'}
+                                            onClick={() => handlePreview(doc)}
+                                            title="Preview"
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="hover:bg-primary/10 hover:text-primary text-muted-foreground h-8 w-8 rounded-lg transition-colors"
+                                            disabled={doc.processingStatus !== 'completed'}
+                                            onClick={() => handleDownload(doc)}
+                                            title="Download"
+                                          >
+                                            <Download className="h-4 w-4" />
+                                          </Button>
+                                          <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 size="icon"
@@ -430,6 +457,13 @@ export default function DashboardPage() {
           </CardFooter>
         )}
       </Card>
+
+      {/* File Preview Dialog */}
+      <FilePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        file={previewFile}
+      />
     </div>
   );
 }

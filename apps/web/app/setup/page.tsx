@@ -95,7 +95,7 @@ export default function SetupPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Welcome to RAG Document Search
           </h1>
-          <p className="text-gray-600">Let's set up your system</p>
+          <p className="text-gray-600">Let&apos;s set up your system</p>
         </div>
 
         {/* Progress steps */}

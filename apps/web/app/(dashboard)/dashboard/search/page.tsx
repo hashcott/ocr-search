@@ -105,6 +105,7 @@ export default function SearchPage() {
         setMessages(dbMessages);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChat]);
 
   useEffect(() => {
@@ -365,7 +366,7 @@ export default function SearchPage() {
                                 {source.metadata?.filename || source.filename || "Asset Artifact"}
                               </p>
                               <p className="text-xs text-foreground/70 line-clamp-2 italic leading-relaxed">
-                                "{source.content}"
+                                &quot;{source.content}&quot;
                               </p>
                             </div>
                           ))}

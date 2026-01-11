@@ -133,7 +133,7 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
           <p className="text-muted-foreground mt-1">
-            Welcome back. Here's what's happening with your documents today.
+            Welcome back. Here&apos;s what&apos;s happening with your documents today.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -332,7 +332,7 @@ export default function DashboardPage() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="text-2xl font-bold">Delete Document?</AlertDialogTitle>
                                 <AlertDialogDescription className="text-base text-muted-foreground mt-2">
-                                  This will permanently remove <span className="text-foreground font-bold font-mono">"{doc.filename}"</span> and all AI-extracted insights. This action is irreversible.
+                                  This will permanently remove <span className="text-foreground font-bold font-mono">&quot;{doc.filename}&quot;</span> and all AI-extracted insights. This action is irreversible.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter className="mt-8 gap-3">

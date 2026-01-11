@@ -160,7 +160,7 @@ export default function FilesPage() {
 
                           <div className="relative bg-black/5 dark:bg-black/20 rounded-2xl p-6 border border-black/5 dark:border-white/5 group-hover/card:border-primary/20 transition-colors">
                             <p className="text-lg text-foreground/70 italic leading-relaxed font-medium">
-                              "{result.content}"
+                              &quot;{result.content}&quot;
                             </p>
                           </div>
 
@@ -193,7 +193,7 @@ export default function FilesPage() {
                   <div className="space-y-2">
                     <h3 className="text-2xl font-bold">Neural Mapping Failed</h3>
                     <p className="text-muted-foreground max-w-md mx-auto text-lg">
-                      Unable to find relevant conceptual vectors matching "{searchQuery}".
+                      Unable to find relevant conceptual vectors matching &quot;{searchQuery}&quot;.
                       Try abstracting your inquiry or expanding the knowledge base.
                     </p>
                   </div>

@@ -1,17 +1,35 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Work_Sans, Lora, Inconsolata } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({ 
+// Primary sans-serif font - Clean and modern
+const workSans = Work_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
   display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+// Serif font for elegant accents
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+// Monospace font for code and technical content
+const inconsolata = Inconsolata({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "RAG Document Search",
-  description: "AI-powered document search system with RAG",
+  title: "DocuAI - Intelligent Document Search",
+  description: "AI-powered document search and analysis with RAG technology",
 };
 
 export default function RootLayout({
@@ -21,10 +39,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans`}>
+      <body
+        className={`${workSans.variable} ${lora.variable} ${inconsolata.variable} font-sans antialiased`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
-

@@ -21,6 +21,7 @@ import {
     Building2,
     Moon,
     Sun,
+    Leaf,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -135,25 +136,23 @@ export default function DashboardLayout({
 
     return (
         <div className="flex h-screen bg-background text-foreground selection:bg-primary/20">
-            {/* Background Glow Decorations */}
-            <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 dark:bg-primary/10 blur-[120px] rounded-full pointer-events-none z-0" />
-            <div className="fixed bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-purple-500/5 dark:bg-purple-500/10 blur-[100px] rounded-full pointer-events-none z-0" />
-
             {/* Mobile menu overlay */}
             {mobileMenuOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/40 backdrop-blur-md lg:hidden transition-all duration-300"
+                    className="fixed inset-0 z-40 bg-foreground/30 lg:hidden transition-all duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                 />
             )}
 
-            {/* Sidebar Layout - Modern & Glassy */}
+            {/* Sidebar - Clean & Minimal */}
             <aside
-                className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out border-r glass ${sidebarOpen ? "w-64" : "w-16"
-                    } ${mobileMenuOpen
+                className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col transition-all duration-200 ease-out bg-card border-r border-border ${
+                    sidebarOpen ? "w-64" : "w-[72px]"
+                } ${
+                    mobileMenuOpen
                         ? "translate-x-0"
                         : "-translate-x-full lg:translate-x-0"
-                    }`}
+                }`}
                 onClick={(e) => {
                     if (window.innerWidth < 1024) {
                         const target = e.target as HTMLElement;
@@ -164,19 +163,17 @@ export default function DashboardLayout({
                 }}
             >
                 {/* Logo Section */}
-                <div className={`flex items-center h-20 border-b border-border/40 dark:border-border/50 ${sidebarOpen ? "justify-between px-4" : "justify-center px-0"}`}>
+                <div className={`flex items-center h-16 border-b border-border ${sidebarOpen ? "justify-between px-5" : "justify-center px-0"}`}>
                     <div className={`flex items-center ${sidebarOpen ? "gap-3" : "gap-0"}`}>
-                        <div className="w-10 h-10 rounded-xl bg-ai-gradient p-[1px] shadow-ai flex-shrink-0">
-                            <div className="w-full h-full bg-background rounded-[11px] flex items-center justify-center">
-                                <FileText className="h-5 w-5 text-primary" />
-                            </div>
+                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                            <Leaf className="h-5 w-5 text-primary-foreground" />
                         </div>
                         {sidebarOpen && (
                             <div className="animate-fadeIn">
-                                <h1 className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                                <h1 className="font-semibold text-base tracking-tight text-foreground">
                                     DocuAI
                                 </h1>
-                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                                <p className="text-[10px] text-muted-foreground/60 font-medium tracking-wide">
                                     Enterprise
                                 </p>
                             </div>
@@ -185,27 +182,26 @@ export default function DashboardLayout({
                     {sidebarOpen && mobileMenuOpen && (
                         <button
                             onClick={() => setMobileMenuOpen(false)}
-                            className="lg:hidden p-2 rounded-full hover:bg-accent/50 transition-colors"
+                            className="lg:hidden p-2 rounded-lg hover:bg-accent transition-colors"
                         >
-                            <X className="h-5 w-5" />
+                            <X className="h-5 w-5 text-muted-foreground" />
                         </button>
                     )}
                 </div>
 
-                {/* Sidebar Navigation */}
-                <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto no-scrollbar">
+                {/* Navigation */}
+                <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto no-scrollbar">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link key={item.href} href={item.href}>
                                 <div
-                                    className={`sidebar-item group ${isActive ? "active" : "hover:bg-accent/30"} ${!sidebarOpen ? "justify-center px-0" : ""}`}
+                                    className={`sidebar-item ${isActive ? "active" : ""} ${!sidebarOpen ? "justify-center px-0" : ""}`}
                                     title={item.name}
                                 >
-                                    <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? "text-white" : "text-muted-foreground"} ${!sidebarOpen ? "m-0" : ""}`} />
-                                    {sidebarOpen && <span className="truncate font-medium animate-fadeIn">{item.name}</span>}
-                                    {isActive && sidebarOpen && (
-                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white]" />
+                                    <item.icon className={`h-[18px] w-[18px] flex-shrink-0 ${isActive ? "text-primary-foreground" : ""} ${!sidebarOpen ? "m-0" : ""}`} />
+                                    {sidebarOpen && (
+                                        <span className="truncate animate-fadeIn">{item.name}</span>
                                     )}
                                 </div>
                             </Link>
@@ -213,110 +209,111 @@ export default function DashboardLayout({
                     })}
                 </nav>
 
-                {/* AI Status / Quota Summary */}
+                {/* AI Usage Indicator */}
                 {sidebarOpen && (
-                    <div className="px-4 py-4 m-3 rounded-2xl bg-primary/5 border border-primary/10 animate-fadeIn">
+                    <div className="px-4 py-4 mx-3 mb-3 rounded-lg bg-accent border border-border">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">AI Tokens</span>
-                            <span className="text-[10px] font-bold text-primary">84%</span>
+                            <span className="text-xs font-medium text-muted-foreground">AI Tokens</span>
+                            <span className="text-xs font-semibold text-primary">84%</span>
                         </div>
-                        <div className="h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full w-[84%] shadow-glow" />
+                        <div className="h-1 w-full bg-border rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full w-[84%]" />
                         </div>
                     </div>
                 )}
 
-                {/* User Profile Section */}
-                <div className="mt-auto p-4 border-t border-border/50">
+                {/* User Section */}
+                <div className="mt-auto p-3 border-t border-border">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
-                                className={`w-full flex items-center rounded-xl p-2 transition-all duration-300 hover:bg-accent/50 ${sidebarOpen ? "gap-3" : "justify-center"
-                                    }`}
+                                className={`w-full flex items-center rounded-lg p-2.5 transition-colors duration-150 hover:bg-accent ${
+                                    sidebarOpen ? "gap-3" : "justify-center"
+                                }`}
                             >
                                 <div className="relative">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center shadow-lg">
-                                        <span className="text-sm font-bold text-white">
+                                    <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
+                                        <span className="text-xs font-semibold text-primary-foreground">
                                             {getInitials(user?.name, user?.email)}
                                         </span>
                                     </div>
-                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
+                                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-chart-2 border-2 border-card rounded-full" />
                                 </div>
                                 {sidebarOpen && (
                                     <>
-                                        <div className="flex-1 text-left animate-fadeIn">
-                                            <p className="text-sm font-semibold truncate leading-tight">
+                                        <div className="flex-1 text-left animate-fadeIn min-w-0">
+                                            <p className="text-sm font-medium truncate">
                                                 {user?.name || "Admin User"}
                                             </p>
-                                            <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
+                                            <p className="text-xs text-muted-foreground/60 truncate">
                                                 {user?.email || "admin@example.com"}
                                             </p>
                                         </div>
-                                        <ChevronDown className="h-4 w-4 text-muted-foreground opacity-50 transition-transform group-hover:translate-y-0.5" />
+                                        <ChevronDown className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
                                     </>
                                 )}
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                             align={sidebarOpen ? "end" : "start"}
-                            side={sidebarOpen ? "right" : "right"}
-                            className="w-64 p-2 glass animate-fadeIn rounded-2xl shadow-2xl border-border/50"
+                            side="right"
+                            className="w-56 p-1.5 bg-card rounded-lg shadow-lg border-border"
                         >
-                            <div className="px-3 py-2 border-b border-border/50 mb-1">
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Account</p>
+                            <div className="px-2.5 py-2 border-b border-border mb-1">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Account</p>
                             </div>
-                            <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/10 focus:text-primary transition-colors cursor-pointer py-2.5">
-                                <Link href="/dashboard/account" className="flex items-center gap-3">
+                            <DropdownMenuItem asChild className="rounded focus:bg-accent cursor-pointer py-2">
+                                <Link href="/dashboard/account" className="flex items-center gap-2.5">
                                     <User className="h-4 w-4" />
                                     <span className="font-medium">My Profile</span>
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/10 focus:text-primary transition-colors cursor-pointer py-2.5">
-                                <Link href="/dashboard/settings" className="flex items-center gap-3">
+                            <DropdownMenuItem asChild className="rounded focus:bg-accent cursor-pointer py-2">
+                                <Link href="/dashboard/settings" className="flex items-center gap-2.5">
                                     <Settings className="h-4 w-4" />
-                                    <span className="font-medium">Workspace Settings</span>
+                                    <span className="font-medium">Settings</span>
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-border/50 my-1" />
+                            <DropdownMenuSeparator className="bg-border my-1" />
                             <DropdownMenuItem
                                 onClick={handleLogout}
-                                className="rounded-xl focus:bg-destructive/10 focus:text-destructive text-destructive/80 transition-colors cursor-pointer py-2.5"
+                                className="rounded focus:bg-destructive/10 focus:text-destructive text-destructive cursor-pointer py-2"
                             >
-                                <LogOut className="h-4 w-4 mr-3" />
-                                <span className="font-bold">Sign Out</span>
+                                <LogOut className="h-4 w-4 mr-2.5" />
+                                <span className="font-medium">Sign Out</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
             </aside>
 
-            {/* Main Content Area */}
+            {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden relative z-10">
-                {/* Header - Clean & Minimal */}
-                <header className="h-20 flex items-center justify-between px-6 border-b border-border/40 dark:border-border/30 backdrop-blur-md sticky top-0 bg-background/50 z-40">
-                    <div className="flex items-center gap-4 flex-1 max-w-2xl">
+                {/* Header - Minimal & Functional */}
+                <header className="h-16 flex items-center justify-between px-5 border-b border-border bg-background sticky top-0 z-40">
+                    <div className="flex items-center gap-3 flex-1 max-w-xl">
                         <button
                             onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="hidden lg:flex p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-accent/50 transition-all text-muted-foreground hover:text-foreground hover:shadow-sm"
+                            className="hidden lg:flex p-2 rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
                             aria-label="Toggle sidebar"
                         >
                             <Menu className="h-5 w-5" />
                         </button>
                         <button
                             onClick={() => setMobileMenuOpen(true)}
-                            className="lg:hidden p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-accent/50 transition-all text-muted-foreground hover:text-foreground"
+                            className="lg:hidden p-2 rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
                             aria-label="Open menu"
                         >
                             <Menu className="h-5 w-5" />
                         </button>
 
-                        <div className="flex-1 lg:max-w-md relative group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                        <div className="flex-1 lg:max-w-sm relative group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <form onSubmit={handleSearch}>
                                 <Input
                                     type="text"
-                                    placeholder="Search intelligence index... (⌘K)"
-                                    className="w-full bg-black/5 dark:bg-white/5 border-none pl-11 h-11 rounded-2xl focus:ring-1 focus:ring-primary/40 placeholder:text-muted-foreground/40 font-medium transition-all"
+                                    placeholder="Search documents..."
+                                    className="w-full bg-accent border-border pl-10 h-10 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-muted-foreground font-medium"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
@@ -324,33 +321,33 @@ export default function DashboardLayout({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={toggleTheme}
-                            className="w-10 h-10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-muted-foreground hover:text-foreground"
+                            className="w-9 h-9 rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
                         >
                             {isDark ? (
-                                <Sun className="h-5 w-5 text-amber-500" />
+                                <Sun className="h-[18px] w-[18px] text-chart-4" />
                             ) : (
-                                <Moon className="h-5 w-5 text-indigo-600" />
+                                <Moon className="h-[18px] w-[18px]" />
                             )}
                         </Button>
 
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="w-10 h-10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 relative text-muted-foreground hover:text-foreground transition-all"
+                            className="w-9 h-9 rounded-lg hover:bg-accent relative text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            <Bell className="h-5 w-5" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full border-2 border-background" />
+                            <Bell className="h-[18px] w-[18px]" />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
                         </Button>
 
-                        <div className="w-px h-6 bg-border/40 dark:bg-border/50 mx-2 hidden sm:block" />
+                        <div className="w-px h-5 bg-border/50 mx-1 hidden sm:block" />
 
                         <Link href="/dashboard/upload">
-                            <Button className="hidden sm:flex items-center gap-2 bg-ai-gradient hover:opacity-90 shadow-ai border-none rounded-xl h-11 px-5 font-bold transition-transform hover:scale-105 active:scale-95">
+                            <Button className="hidden sm:flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-9 px-4 font-medium">
                                 <Upload className="h-4 w-4" />
                                 <span>Upload</span>
                             </Button>
@@ -358,7 +355,7 @@ export default function DashboardLayout({
                     </div>
                 </header>
 
-                {/* Page Content - Scrolling handled by individual pages */}
+                {/* Page Content */}
                 <main className="flex-1 overflow-hidden relative">
                     {children}
                 </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock, Save } from "lucide-react";
+import { User, Mail, Lock, Save, Loader2 } from "lucide-react";
 
 export default function AccountPage() {
     const { toast } = useToast();
@@ -23,7 +23,6 @@ export default function AccountPage() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    // Fetch user data
     const { data: user, refetch } = trpc.auth.me.useQuery(undefined, {
         onSuccess: (data) => {
             setName(data.name || "");
@@ -31,7 +30,6 @@ export default function AccountPage() {
         },
     });
 
-    // Update profile mutation
     const updateProfileMutation = trpc.auth.updateProfile.useMutation({
         onSuccess: () => {
             toast({
@@ -49,7 +47,6 @@ export default function AccountPage() {
         },
     });
 
-    // Change password mutation
     const changePasswordMutation = trpc.auth.changePassword.useMutation({
         onSuccess: () => {
             toast({
@@ -93,54 +90,37 @@ export default function AccountPage() {
         });
     };
 
-    // Get user initials for avatar
-    const getInitials = (name?: string, email?: string) => {
-        if (name) {
-            return name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2);
-        }
-        if (email) {
-            return email[0].toUpperCase();
-        }
-        return "U";
-    };
-
     return (
-        <div className="p-8 space-y-8 max-w-4xl">
-            {/* Page Header */}
+        <div className="h-full overflow-y-auto p-6 lg:p-8 space-y-6 max-w-2xl mx-auto custom-scrollbar">
+            {/* Header */}
             <div>
-                <h1 className="text-3xl font-semibold text-foreground">
-                    Cài đặt tài khoản
-                </h1>
-                <p className="text-muted-foreground mt-2">
-                    Quản lý thông tin tài khoản và bảo mật
+                <h1 className="text-2xl font-semibold tracking-tight">Account Settings</h1>
+                <p className="text-muted-foreground mt-1 text-sm">
+                    Manage your account information and security
                 </p>
             </div>
 
             {/* Profile Information */}
-            <Card>
+            <Card className="bg-card border-border">
                 <CardHeader>
                     <div className="flex items-center gap-2">
-                        <User className="h-5 w-5 text-muted-foreground" />
-                        <CardTitle>Thông tin cá nhân</CardTitle>
+                        <User className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-lg">Profile Information</CardTitle>
                     </div>
                     <CardDescription>
-                        Cập nhật thông tin cá nhân và tài khoản của bạn
+                        Update your personal information
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleUpdateProfile} className="space-y-6">
+                    <form onSubmit={handleUpdateProfile} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Tên</Label>
+                            <Label htmlFor="name">Name</Label>
                             <Input
                                 id="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Tên của bạn"
+                                placeholder="Your name"
+                                className="bg-accent border-border"
                             />
                         </div>
 
@@ -154,97 +134,106 @@ export default function AccountPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="your.email@example.com"
-                                    className="pl-10"
+                                    className="pl-10 bg-accent border-border"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Vai trò</Label>
+                            <Label>Role</Label>
                             <Input
-                                value={user?.role === "admin" ? "Quản trị viên" : "Người dùng"}
+                                value={user?.role === "admin" ? "Administrator" : "User"}
                                 disabled
-                                className="bg-muted"
+                                className="bg-muted border-border"
                             />
                         </div>
 
                         <Button
                             type="submit"
-                            disabled={updateProfileMutation.isLoading}
-                            className="w-full sm:w-auto"
+                            disabled={updateProfileMutation.isPending}
+                            className="rounded-lg bg-primary"
                         >
-                            <Save className="h-4 w-4 mr-2" />
-                            {updateProfileMutation.isLoading
-                                ? "Đang lưu..."
-                                : "Lưu thay đổi"}
+                            {updateProfileMutation.isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save Changes
+                                </>
+                            )}
                         </Button>
                     </form>
                 </CardContent>
             </Card>
 
             {/* Change Password */}
-            <Card>
+            <Card className="bg-card border-border">
                 <CardHeader>
                     <div className="flex items-center gap-2">
-                        <Lock className="h-5 w-5 text-muted-foreground" />
-                        <CardTitle>Đổi mật khẩu</CardTitle>
+                        <Lock className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-lg">Change Password</CardTitle>
                     </div>
                     <CardDescription>
-                        Cập nhật mật khẩu để bảo vệ tài khoản của bạn
+                        Update your password to keep your account secure
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleChangePassword} className="space-y-6">
+                    <form onSubmit={handleChangePassword} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="currentPassword">
-                                Mật khẩu hiện tại
-                            </Label>
+                            <Label htmlFor="currentPassword">Current Password</Label>
                             <Input
                                 id="currentPassword"
                                 type="password"
                                 value={currentPassword}
-                                onChange={(e) =>
-                                    setCurrentPassword(e.target.value)
-                                }
-                                placeholder="Nhập mật khẩu hiện tại"
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                placeholder="Enter current password"
+                                className="bg-accent border-border"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="newPassword">Mật khẩu mới</Label>
+                            <Label htmlFor="newPassword">New Password</Label>
                             <Input
                                 id="newPassword"
                                 type="password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                                placeholder="Enter new password (min 6 characters)"
+                                className="bg-accent border-border"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">
-                                Xác nhận mật khẩu mới
-                            </Label>
+                            <Label htmlFor="confirmPassword">Confirm New Password</Label>
                             <Input
                                 id="confirmPassword"
                                 type="password"
                                 value={confirmPassword}
-                                onChange={(e) =>
-                                    setConfirmPassword(e.target.value)
-                                }
-                                placeholder="Xác nhận mật khẩu mới"
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Confirm new password"
+                                className="bg-accent border-border"
                             />
                         </div>
 
                         <Button
                             type="submit"
-                            disabled={changePasswordMutation.isLoading}
-                            className="w-full sm:w-auto"
+                            disabled={changePasswordMutation.isPending}
+                            className="rounded-lg bg-primary"
                         >
-                            <Lock className="h-4 w-4 mr-2" />
-                            {changePasswordMutation.isLoading
-                                ? "Đang đổi..."
-                                : "Đổi mật khẩu"}
+                            {changePasswordMutation.isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Changing...
+                                </>
+                            ) : (
+                                <>
+                                    <Lock className="h-4 w-4 mr-2" />
+                                    Change Password
+                                </>
+                            )}
                         </Button>
                     </form>
                 </CardContent>
@@ -252,4 +241,3 @@ export default function AccountPage() {
         </div>
     );
 }
-

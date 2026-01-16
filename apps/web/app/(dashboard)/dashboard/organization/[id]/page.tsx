@@ -244,9 +244,9 @@ export default function OrganizationDetailPage() {
   }
 
   return (
-    <div className="animate-fadeIn space-y-6 p-6">
+    <div className="animate-fadeIn h-full overflow-y-auto custom-scrollbar space-y-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/organization">
             <Button variant="ghost" size="icon">
@@ -299,24 +299,24 @@ export default function OrganizationDetailPage() {
       </div>
 
       <Tabs defaultValue="members" className="space-y-6">
-        <TabsList className="rounded-lg bg-white p-1 shadow-sm dark:bg-slate-800">
+        <TabsList className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 h-auto rounded-lg bg-white p-1 shadow-sm dark:bg-slate-800">
           <TabsTrigger
             value="members"
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+            className="w-full justify-start data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
           >
             <Users className="mr-2 h-4 w-4" />
             Members
           </TabsTrigger>
           <TabsTrigger
             value="permissions"
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+            className="w-full justify-start data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
           >
             <Shield className="mr-2 h-4 w-4" />
             My Permissions
           </TabsTrigger>
           <TabsTrigger
             value="role-permissions"
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+            className="w-full justify-start data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
           >
             <Info className="mr-2 h-4 w-4" />
             Role Reference
@@ -324,7 +324,7 @@ export default function OrganizationDetailPage() {
           {canUpdateOrg && (
             <TabsTrigger
               value="settings"
-              className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+              className="w-full justify-start data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
             >
               <Settings className="mr-2 h-4 w-4" />
               Settings
@@ -335,7 +335,7 @@ export default function OrganizationDetailPage() {
         {/* Members Tab */}
         <TabsContent value="members">
           <Card className="border-0 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <CardTitle>Members ({members?.length || 0})</CardTitle>
                 <CardDescription>Manage team members and their roles</CardDescription>
@@ -396,10 +396,10 @@ export default function OrganizationDetailPage() {
                             role: inviteRole,
                           })
                         }
-                        disabled={inviteMutation.isLoading}
+                        disabled={inviteMutation.isPending}
                         className="gradient-primary border-0"
                       >
-                        {inviteMutation.isLoading ? 'Inviting...' : 'Invite'}
+                        {inviteMutation.isPending ? 'Inviting...' : 'Invite'}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -411,7 +411,7 @@ export default function OrganizationDetailPage() {
                 {members?.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
+                    className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between first:pt-0 last:pb-0"
                   >
                     <div className="flex items-center gap-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
@@ -428,7 +428,7 @@ export default function OrganizationDetailPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex w-full items-center justify-between gap-3 md:w-auto md:justify-end">
                       {member.joinedAt && (
                         <span className="flex items-center gap-1 text-xs text-slate-400">
                           <Calendar className="h-3 w-3" />
@@ -610,7 +610,7 @@ export default function OrganizationDetailPage() {
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {actions.length > 0 ? (
-                              actions.includes('manage') ? (
+                              (actions as string[]).includes('manage') ? (
                                 <span className="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                   <Check className="h-2.5 w-2.5" />
                                   Full Access

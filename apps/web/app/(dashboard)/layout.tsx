@@ -222,18 +222,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        {/* AI Usage Indicator */}
-        {sidebarOpen && (
-          <div className="bg-accent border-border mx-3 mb-3 rounded-lg border px-4 py-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-muted-foreground text-xs font-medium">AI Tokens</span>
-              <span className="text-primary text-xs font-semibold">84%</span>
-            </div>
-            <div className="bg-border h-1 w-full overflow-hidden rounded-full">
-              <div className="bg-primary h-full w-[84%] rounded-full" />
-            </div>
-          </div>
-        )}
 
         {/* User Section */}
         <div className="border-border mt-auto border-t p-3">

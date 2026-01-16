@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { SystemConfigSchema } from '@fileai/shared';
 import { SystemConfig } from '../db/models/SystemConfig';
 import { User } from '../db/models/User';
+import { listModels } from '../services/llm-service';
 
 export const configRouter = router({
   // Check if application is initialized (has at least one user)
@@ -95,5 +96,18 @@ export const configRouter = router({
     .mutation(async ({ input: _input }) => {
       // TODO: Implement connection testing
       return { success: true, message: 'Connection successful' };
+    }),
+
+  listModels: publicProcedure
+    .input(
+      z.object({
+        provider: z.enum(['ollama', 'openai']),
+        baseUrl: z.string().optional(),
+        apiKey: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      // Proxy to LLM service
+      return listModels(input.provider, input.baseUrl, input.apiKey);
     }),
 });

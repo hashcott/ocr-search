@@ -129,17 +129,26 @@ const RAG_PROMPT_TEMPLATE = `You are a helpful AI assistant that answers questio
 Context from documents:
 {context}
 
+Chat History:
+{chat_history}
+
 Question: {question}
 
-Please provide a comprehensive answer based on the context above. If the context doesn't contain enough information to answer the question, say so clearly. Always cite which parts of the context you used to form your answer.
+Please provide a comprehensive answer based on the context above and the chat history. If the context doesn't contain enough information to answer the question, say so clearly. Always cite which parts of the context you used to form your answer.
 
 Answer:`;
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 export async function performRAGQuery(
   query: string,
   userId: string,
   topK: number = 5,
-  documentIds?: string[]
+  documentIds?: string[],
+  chatHistory: ChatMessage[] = []
 ): Promise<RAGResponse> {
   // 1. Search for relevant documents (get more results to account for deduplication and verification)
   const filter = documentIds ? { documentId: { $in: documentIds } } : undefined;
@@ -189,8 +198,13 @@ export async function performRAGQuery(
   const prompt = PromptTemplate.fromTemplate(RAG_PROMPT_TEMPLATE);
   const chain = RunnableSequence.from([prompt, llm, new StringOutputParser()]);
 
+  const chatHistoryText = chatHistory
+    .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+    .join('\n');
+
   const answer = await chain.invoke({
     context,
+    chat_history: chatHistoryText,
     question: query,
   });
 
@@ -205,7 +219,8 @@ export async function performRAGQueryStream(
   query: string,
   userId: string,
   topK: number = 5,
-  documentIds?: string[]
+  documentIds?: string[],
+  chatHistory: ChatMessage[] = []
 ) {
   // 1. Search for relevant documents (get more results to account for deduplication)
   const filter = documentIds ? { documentId: { $in: documentIds } } : undefined;
@@ -255,8 +270,13 @@ export async function performRAGQueryStream(
 
   const chain = RunnableSequence.from([prompt, llm, new StringOutputParser()]);
 
+  const chatHistoryText = chatHistory
+    .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+    .join('\n');
+
   const stream = await chain.stream({
     context,
+    chat_history: chatHistoryText,
     question: query,
   });
 

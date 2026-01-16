@@ -93,12 +93,18 @@ export const chatRouter = router({
         timestamp: new Date(),
       });
 
+      // Get recent chat history (last 10 messages excluding current)
+      const recentHistory = chat.messages
+        .slice(-11, -1)
+        .map((msg) => ({ role: msg.role, content: msg.content }));
+
       // Get RAG response
       const response = await performRAGQuery(
         input.message,
         ctx.userId!,
         input.topK,
-        input.documentIds
+        input.documentIds,
+        recentHistory
       );
 
       // Add assistant message
@@ -166,12 +172,18 @@ export const chatRouter = router({
             });
             await chat.save();
 
+            // Get recent chat history (last 10 messages excluding current)
+            const recentHistory = chat.messages
+              .slice(-11, -1)
+              .map((msg) => ({ role: msg.role, content: msg.content }));
+
             // Get streaming response
             const { stream, sources } = await performRAGQueryStream(
               input.message,
               ctx.userId!,
               input.topK,
-              input.documentIds
+              input.documentIds,
+              recentHistory
             );
 
             if (!stream) {

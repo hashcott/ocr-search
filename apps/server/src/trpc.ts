@@ -37,6 +37,7 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 
 // Export procedure helpers
 export const router = t.router;
+export const createCallerFactory = t.createCallerFactory;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(isAuthenticated);
 export const adminProcedure = t.procedure.use(isAdmin);

@@ -50,6 +50,7 @@ async function resetData() {
       } else {
          console.log(`Qdrant collection ${collectionName} not found or already deleted.`);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       // Qdrant client might throw if collection doesn't exist or connection fails
       if (error?.status === 404 || error?.message?.includes('Not Found')) {
@@ -77,6 +78,7 @@ async function resetData() {
         // Recreate the directory
         await fs.mkdir(absolutePath, { recursive: true });
         console.log(`Cleared local storage at: ${absolutePath}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
          if (error.code !== 'ENOENT') {
              console.warn(`Failed to clear local storage at ${absolutePath}:`, error.message);
@@ -120,7 +122,7 @@ async function resetData() {
                     const deleteCommand = new DeleteObjectsCommand({
                         Bucket: s3Config.bucket,
                         Delete: {
-                            Objects: listResult.Contents.map((obj: any) => ({ Key: obj.Key })),
+                            Objects: listResult.Contents.map((obj) => ({ Key: obj.Key })),
                         },
                     });
                     await s3Client.send(deleteCommand);
@@ -131,6 +133,7 @@ async function resetData() {
             } while (continuationToken);
             
             console.log(`Cleared S3 bucket: ${s3Config.bucket} (${deletedCount} objects deleted)`);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } catch (error: any) {
               console.warn('Failed to clear S3 bucket:', error.message);
           }

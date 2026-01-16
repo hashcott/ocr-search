@@ -9,11 +9,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default tseslint.config(
+  {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   eslintConfigPrettier,
   {
-    files: ['src/**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -21,7 +28,7 @@ export default tseslint.config(
         ...globals.node,
       },
       parserOptions: {
-        project: './tsconfig.json',
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: __dirname,
       },
     },
@@ -44,6 +51,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['node_modules/**', 'dist/**', 'uploads/**'],
+    ignores: ['node_modules/**', 'dist/**', 'uploads/**', 'coverage/**'],
   }
 );
